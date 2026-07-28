@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">睡眠闹钟</string>
+    <string name="bedtime">就寝时间</string>
+    <string name="wake_time">起床时间</string>
+    <string name="sleep_duration">预计睡眠</string>
+    <string name="gradual_volume">渐响音量</string>
+    <string name="repeat_days">重复</string>
+    <string name="enable_alarm">启用闹钟</string>
+    <string name="daily_briefing">每日播报</string>
+    <string name="dismiss">关闭</string>
+    <string name="snooze">稍后提醒</string>
+    <string name="view_briefing">查看每日播报</string>
+    <string name="time_to_sleep">该睡觉了</string>
+    <string name="good_morning">早上好</string>
+</resources>

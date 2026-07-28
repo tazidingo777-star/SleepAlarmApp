@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 闹钟圆形背景 -->
+    <path
+        android:fillColor="#6750A4"
+        android:pathData="M54,54m-40,0a40,40 0,1 1,80 0a40,40 0,1 1,-80 0" />
+
+    <!-- 闹钟外圈 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,30m-20,0a20,20 0,1 1,40 0a20,20 0,1 1,-40 0" />
+
+    <!-- 闹钟内圈 -->
+    <path
+        android:fillColor="#6750A4"
+        android:pathData="M54,34m-16,0a16,16 0,1 1,32 0a16,16 0,1 1,-32 0" />
+
+    <!-- 时针 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,34 L54,46 L52,46 L52,34 Z" />
+
+    <!-- 分针 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,34 L62,38 L61,40 L54,37 Z" />
+
+    <!-- 中心点 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,54m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0" />
+
+    <!-- 闹钟顶部铃铛左 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M46,10 L46,26 L42,26 L42,10 Z" />
+
+    <!-- 闹钟顶部铃铛右 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M62,10 L66,10 L66,26 L62,26 Z" />
+
+    <!-- 闹钟底部支架 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50,74 L58,74 L56,80 L52,80 Z" />
+</vector>
