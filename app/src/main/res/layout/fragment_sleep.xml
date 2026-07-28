@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FF1C1C2E"
+    android:gravity="center_horizontal">
+
+    <!-- iOS风格环形时钟 -->
+    <com.sleepalarm.app.ui.CircleClockView
+        android:id="@+id/circle_clock"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- 底部控制栏 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:paddingBottom="24dp">
+
+        <!-- 启用开关 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="启用睡眠闹钟"
+                android:textSize="16sp"
+                android:textColor="#FFFFFF" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/switch_sleep_enabled"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- 按钮行 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_sleep_repeat"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="重复: 每天"
+                android:textColor="#8E8E9A"
+                android:textSize="13sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_sleep_gradual"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="渐响: 10分钟"
+                android:textColor="#8E8E9A"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- 每日播报 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_sleep_briefing"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:text="查看每日播报"
+            android:textColor="#8E8E9A"
+            app:strokeColor="#3A3A4E"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+</LinearLayout>

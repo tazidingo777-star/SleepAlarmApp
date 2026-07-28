@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background"
+    android:gravity="center_horizontal"
+    android:padding="24dp">
+
+    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.2" />
+
+    <!-- 秒表时间显示 -->
+    <TextView
+        android:id="@+id/tv_stopwatch_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00:00.00"
+        android:textSize="56sp"
+        android:textColor="@color/on_background"
+        android:fontFamily="monospace"
+        android:textStyle="bold" />
+
+    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.2" />
+
+    <!-- 计次记录 -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.4">
+
+        <TextView
+            android:id="@+id/tv_laps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="16sp"
+            android:textColor="@color/gray_dark"
+            android:fontFamily="monospace"
+            android:gravity="center" />
+    </ScrollView>
+
+    <!-- 按钮 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="24dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_stopwatch_reset"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:text="重置"
+            android:textSize="16sp"
+            app:cornerRadius="40dp"
+            app:strokeColor="@color/gray_light"
+            android:layout_marginEnd="24dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_stopwatch_start"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:text="开始"
+            android:textSize="16sp"
+            app:cornerRadius="40dp"
+            style="@style/Widget.Material3.Button"
+            android:layout_marginEnd="24dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_stopwatch_lap"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:text="计次"
+            android:textSize="16sp"
+            app:cornerRadius="40dp"
+            app:strokeColor="@color/gray_light" />
+    </LinearLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.1" />
+</LinearLayout>

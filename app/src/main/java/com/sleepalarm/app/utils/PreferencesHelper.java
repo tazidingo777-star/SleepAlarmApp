@@ -3,6 +3,7 @@ package com.sleepalarm.app.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.sleepalarm.app.models.Alarm;
 import com.sleepalarm.app.models.SleepSchedule;
 
 import org.json.JSONArray;
@@ -12,12 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * SharedPreferences 工具类 - 管理就寝/起床数据的存储和读取
+ * SharedPreferences 工具类 - 管理闹钟和就寝数据的存储和读取
  */
 public class PreferencesHelper {
 
     private static final String PREF_NAME = "sleep_alarm_prefs";
     private static final String KEY_SCHEDULES = "schedules";
+    private static final String KEY_ALARMS = "alarms";
     private static final String KEY_LAST_BRIEFING_DATE = "last_briefing_date";
     private static final String KEY_BRIEFING_ENABLED = "briefing_enabled";
 
@@ -27,58 +29,99 @@ public class PreferencesHelper {
         this.prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
-    /**
-     * 保存就寝/起床时间安排列表
-     */
-    public void saveSchedules(List<SleepSchedule> schedules) {
-        try {
-            JSONArray jsonArray = new JSONArray();
-            for (SleepSchedule schedule : schedules) {
-                jsonArray.put(scheduleToJson(schedule));
-            }
-            prefs.edit().putString(KEY_SCHEDULES, jsonArray.toString()).apply();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    // ==================== 普通闹钟 ====================
 
-    /**
-     * 读取所有就寝/起床时间安排
-     */
-    public List<SleepSchedule> loadSchedules() {
-        List<SleepSchedule> schedules = new ArrayList<>();
+    public List<Alarm> loadAlarms() {
+        List<Alarm> alarms = new ArrayList<>();
         try {
-            String json = prefs.getString(KEY_SCHEDULES, null);
+            String json = prefs.getString(KEY_ALARMS, null);
             if (json != null) {
-                JSONArray jsonArray = new JSONArray(json);
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    schedules.add(jsonToSchedule(jsonArray.getJSONObject(i)));
+                JSONArray arr = new JSONArray(json);
+                for (int i = 0; i < arr.length(); i++) {
+                    alarms.add(jsonToAlarm(arr.getJSONObject(i)));
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // 如果没有保存的数据，返回默认安排
+        return alarms;
+    }
+
+    public void saveAlarms(List<Alarm> alarms) {
+        try {
+            JSONArray arr = new JSONArray();
+            for (Alarm a : alarms) arr.put(alarmToJson(a));
+            prefs.edit().putString(KEY_ALARMS, arr.toString()).apply();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void saveAlarm(Alarm alarm) {
+        List<Alarm> alarms = loadAlarms();
+        boolean found = false;
+        for (int i = 0; i < alarms.size(); i++) {
+            if (alarms.get(i).getId() == alarm.getId()) {
+                alarms.set(i, alarm);
+                found = true;
+                break;
+            }
+        }
+        if (!found) alarms.add(alarm);
+        saveAlarms(alarms);
+    }
+
+    public void deleteAlarm(long alarmId) {
+        List<Alarm> alarms = loadAlarms();
+        for (int i = 0; i < alarms.size(); i++) {
+            if (alarms.get(i).getId() == alarmId) {
+                alarms.remove(i);
+                break;
+            }
+        }
+        saveAlarms(alarms);
+    }
+
+    // ==================== 睡眠闹钟 ====================
+
+    public void saveSchedules(List<SleepSchedule> schedules) {
+        try {
+            JSONArray arr = new JSONArray();
+            for (SleepSchedule s : schedules) arr.put(scheduleToJson(s));
+            prefs.edit().putString(KEY_SCHEDULES, arr.toString()).apply();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<SleepSchedule> loadSchedules() {
+        List<SleepSchedule> schedules = new ArrayList<>();
+        try {
+            String json = prefs.getString(KEY_SCHEDULES, null);
+            if (json != null) {
+                JSONArray arr = new JSONArray(json);
+                for (int i = 0; i < arr.length(); i++) {
+                    schedules.add(jsonToSchedule(arr.getJSONObject(i)));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if (schedules.isEmpty()) {
             schedules.add(new SleepSchedule());
         }
         return schedules;
     }
 
-    /**
-     * 获取当前激活的就寝/起床安排（取第一个启用的）
-     */
     public SleepSchedule getActiveSchedule() {
-        List<SleepSchedule> schedules = loadSchedules();
-        for (SleepSchedule schedule : schedules) {
-            if (schedule.isEnabled()) {
-                return schedule;
-            }
+        for (SleepSchedule s : loadSchedules()) {
+            if (s.isEnabled()) return s;
         }
-        return schedules.isEmpty() ? new SleepSchedule() : schedules.get(0);
+        SleepSchedule s = new SleepSchedule();
+        return s;
     }
 
-    // ===== 每日播报相关 =====
+    // ==================== 每日播报 ====================
 
     public boolean isBriefingEnabled() {
         return prefs.getBoolean(KEY_BRIEFING_ENABLED, true);
@@ -96,42 +139,61 @@ public class PreferencesHelper {
         prefs.edit().putString(KEY_LAST_BRIEFING_DATE, date).apply();
     }
 
-    // ===== JSON 转换 =====
+    // ==================== JSON 转换 ====================
 
-    private JSONObject scheduleToJson(SleepSchedule schedule) throws Exception {
-        JSONObject obj = new JSONObject();
-        obj.put("id", schedule.getId());
-        obj.put("bedtimeHour", schedule.getBedtimeHour());
-        obj.put("bedtimeMinute", schedule.getBedtimeMinute());
-        obj.put("wakeHour", schedule.getWakeHour());
-        obj.put("wakeMinute", schedule.getWakeMinute());
-        obj.put("enabled", schedule.isEnabled());
-        obj.put("gradualMinutes", schedule.getGradualMinutes());
-
+    private JSONObject alarmToJson(Alarm a) throws Exception {
+        JSONObject o = new JSONObject();
+        o.put("id", a.getId());
+        o.put("hour", a.getHour());
+        o.put("minute", a.getMinute());
+        o.put("enabled", a.isEnabled());
+        o.put("label", a.getLabel());
+        o.put("gradualMinutes", a.getGradualMinutes());
+        o.put("vibrate", a.isVibrate());
         JSONArray days = new JSONArray();
-        for (boolean day : schedule.getRepeatDays()) {
-            days.put(day);
-        }
-        obj.put("repeatDays", days);
-        return obj;
+        for (boolean d : a.getRepeatDays()) days.put(d);
+        o.put("repeatDays", days);
+        return o;
     }
 
-    private SleepSchedule jsonToSchedule(JSONObject obj) throws Exception {
-        long id = obj.getLong("id");
-        int bedtimeHour = obj.getInt("bedtimeHour");
-        int bedtimeMinute = obj.getInt("bedtimeMinute");
-        int wakeHour = obj.getInt("wakeHour");
-        int wakeMinute = obj.getInt("wakeMinute");
-        boolean enabled = obj.getBoolean("enabled");
-        int gradualMinutes = obj.optInt("gradualMinutes", 10);
+    private Alarm jsonToAlarm(JSONObject o) throws Exception {
+        long id = o.getLong("id");
+        int hour = o.getInt("hour");
+        int minute = o.getInt("minute");
+        boolean enabled = o.getBoolean("enabled");
+        String label = o.optString("label", "闹钟");
+        int gm = o.optInt("gradualMinutes", 5);
+        boolean vib = o.optBoolean("vibrate", true);
+        boolean[] days = new boolean[7];
+        JSONArray arr = o.getJSONArray("repeatDays");
+        for (int i = 0; i < arr.length() && i < 7; i++) days[i] = arr.getBoolean(i);
+        return new Alarm(id, hour, minute, enabled, days, label, gm, vib);
+    }
 
-        boolean[] repeatDays = new boolean[7];
-        JSONArray days = obj.getJSONArray("repeatDays");
-        for (int i = 0; i < days.length() && i < 7; i++) {
-            repeatDays[i] = days.getBoolean(i);
-        }
+    private JSONObject scheduleToJson(SleepSchedule s) throws Exception {
+        JSONObject o = new JSONObject();
+        o.put("id", s.getId());
+        o.put("bedtimeHour", s.getBedtimeHour());
+        o.put("bedtimeMinute", s.getBedtimeMinute());
+        o.put("wakeHour", s.getWakeHour());
+        o.put("wakeMinute", s.getWakeMinute());
+        o.put("enabled", s.isEnabled());
+        o.put("gradualMinutes", s.getGradualMinutes());
+        JSONArray days = new JSONArray();
+        for (boolean d : s.getRepeatDays()) days.put(d);
+        o.put("repeatDays", days);
+        return o;
+    }
 
-        return new SleepSchedule(id, bedtimeHour, bedtimeMinute, wakeHour, wakeMinute,
-                enabled, repeatDays, gradualMinutes);
+    private SleepSchedule jsonToSchedule(JSONObject o) throws Exception {
+        long id = o.getLong("id");
+        int bh = o.getInt("bedtimeHour"), bm = o.getInt("bedtimeMinute");
+        int wh = o.getInt("wakeHour"), wm = o.getInt("wakeMinute");
+        boolean en = o.getBoolean("enabled");
+        int gm = o.optInt("gradualMinutes", 10);
+        boolean[] days = new boolean[7];
+        JSONArray arr = o.getJSONArray("repeatDays");
+        for (int i = 0; i < arr.length() && i < 7; i++) days[i] = arr.getBoolean(i);
+        return new SleepSchedule(id, bh, bm, wh, wm, en, days, gm);
     }
 }
