@@ -83,7 +83,7 @@ public class TimerFragment extends Fragment {
                 updateDisplay();
             }
         });
-        btnClear.setOnLongClickListener(v -> {
+        btnClear.setOnLongClickListener(view -> {
             input.setLength(0);
             updateDisplay();
             return true;
