@@ -10,7 +10,7 @@ import com.sleepalarm.app.utils.AlarmManagerHelper;
 
 /**
  * 闹钟广播接收器 - 在设定的时间触发闹钟
- * 同时处理普通闹钟和睡眠闹钟
+ * 同时处理普通闹钟、睡眠闹钟和通知栏关闭动作
  */
 public class AlarmReceiver extends BroadcastReceiver {
 
@@ -18,6 +18,14 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        // 处理通知栏关闭闹钟动作
+        if (AlarmManagerHelper.ACTION_STOP_ALARM.equals(intent.getAction())) {
+            Log.d(TAG, "通知栏关闭闹钟");
+            Intent stopIntent = new Intent(context, AlarmService.class);
+            context.stopService(stopIntent);
+            return;
+        }
+
         Log.d(TAG, "闹钟触发!");
 
         boolean isRegular = intent.getBooleanExtra(AlarmManagerHelper.EXTRA_IS_REGULAR, false);

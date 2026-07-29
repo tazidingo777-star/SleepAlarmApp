@@ -26,6 +26,7 @@
                 android:layout_height="48dp"
                 android:text="←"
                 android:textSize="20sp"
+                android:textColor="@color/text_secondary"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 app:cornerRadius="24dp" />
@@ -36,7 +37,7 @@
                 android:layout_weight="1"
                 android:text="每日播报"
                 android:textSize="22sp"
-                android:textColor="@color/on_background"
+                android:textColor="@color/text_primary"
                 android:textStyle="bold"
                 android:gravity="center" />
 
@@ -52,7 +53,7 @@
             android:layout_height="wrap_content"
             android:text="早上好！"
             android:textSize="32sp"
-            android:textColor="@color/on_background"
+            android:textColor="@color/text_primary"
             android:textStyle="bold"
             android:layout_marginBottom="4dp" />
 
@@ -69,7 +70,7 @@
                 android:layout_height="wrap_content"
                 android:text="2026年07月28日"
                 android:textSize="16sp"
-                android:textColor="@color/gray_dark" />
+                android:textColor="@color/text_secondary" />
 
             <TextView
                 android:id="@+id/tv_day_of_week"
@@ -88,7 +89,7 @@
             android:layout_height="wrap_content"
             android:text="丙午年 · 属马"
             android:textSize="14sp"
-            android:textColor="@color/gray_light"
+            android:textColor="@color/text_hint"
             android:layout_marginBottom="24dp" />
 
         <!-- 天气卡片 -->
@@ -96,8 +97,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#E3F2FD"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/card_bg"
+            app:strokeColor="@color/gray_light"
+            app:strokeWidth="1dp"
             android:layout_marginBottom="16dp">
 
             <LinearLayout
@@ -118,13 +121,13 @@
                         android:layout_height="wrap_content"
                         android:text="今日天气"
                         android:textSize="14sp"
-                        android:textColor="@color/gray_dark" />
+                        android:textColor="@color/text_secondary" />
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="center_vertical"
+                        android:gravity="baseline"
                         android:layout_marginTop="4dp">
 
                         <TextView
@@ -133,7 +136,7 @@
                             android:layout_height="wrap_content"
                             android:text="28°"
                             android:textSize="42sp"
-                            android:textColor="@color/on_background"
+                            android:textColor="@color/text_primary"
                             android:textStyle="bold" />
 
                         <TextView
@@ -142,7 +145,7 @@
                             android:layout_height="wrap_content"
                             android:text="晴"
                             android:textSize="20sp"
-                            android:textColor="@color/on_background"
+                            android:textColor="@color/text_primary"
                             android:layout_marginStart="12dp" />
                     </LinearLayout>
                 </LinearLayout>
@@ -161,7 +164,7 @@
                 android:layout_height="wrap_content"
                 android:text="阳光明媚，适合户外活动"
                 android:textSize="14sp"
-                android:textColor="@color/gray_dark"
+                android:textColor="@color/text_secondary"
                 android:paddingHorizontal="20dp"
                 android:paddingBottom="16dp" />
         </com.google.android.material.card.MaterialCardView>
@@ -171,8 +174,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#F3E5F5"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/card_bg"
+            app:strokeColor="@color/gray_light"
+            app:strokeWidth="1dp"
             android:layout_marginBottom="16dp">
 
             <LinearLayout
@@ -186,7 +191,7 @@
                     android:layout_height="wrap_content"
                     android:text="睡眠计划"
                     android:textSize="14sp"
-                    android:textColor="@color/gray_dark" />
+                    android:textColor="@color/text_secondary" />
 
                 <TextView
                     android:id="@+id/tv_sleep_summary"
@@ -194,8 +199,8 @@
                     android:layout_height="wrap_content"
                     android:text="昨晚就寝时间: 23:00\n计划睡眠时长: 8小时0分钟\n今日起床时间: 07:00"
                     android:textSize="16sp"
-                    android:textColor="@color/on_background"
-                    android:lineSpacingExtra="4dp"
+                    android:textColor="@color/text_primary"
+                    android:lineSpacingExtra="6dp"
                     android:layout_marginTop="8dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -205,7 +210,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/card_bg"
+            app:strokeColor="@color/gray_light"
+            app:strokeWidth="1dp"
             android:layout_marginBottom="16dp">
 
             <LinearLayout
@@ -219,7 +227,7 @@
                     android:layout_height="wrap_content"
                     android:text="每日一语"
                     android:textSize="14sp"
-                    android:textColor="@color/gray_dark" />
+                    android:textColor="@color/text_secondary" />
 
                 <TextView
                     android:id="@+id/tv_quote"
@@ -227,7 +235,7 @@
                     android:layout_height="wrap_content"
                     android:text="「每一个清晨都是新的开始，把握今天，成就未来。」"
                     android:textSize="18sp"
-                    android:textColor="@color/on_background"
+                    android:textColor="@color/text_primary"
                     android:lineSpacingExtra="6dp"
                     android:layout_marginTop="12dp" />
             </LinearLayout>
@@ -240,7 +248,7 @@
             android:layout_height="wrap_content"
             android:text="更新时间: 07:00:00"
             android:textSize="12sp"
-            android:textColor="@color/gray_light"
+            android:textColor="@color/text_hint"
             android:gravity="center"
             android:layout_marginTop="8dp" />
 

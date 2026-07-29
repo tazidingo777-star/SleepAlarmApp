@@ -27,6 +27,8 @@ import androidx.core.app.NotificationCompat;
 import com.sleepalarm.app.ui.AlarmAlertActivity;
 import com.sleepalarm.app.utils.AlarmManagerHelper;
 
+import android.app.PendingIntent;
+
 /**
  * 闹钟前台服务 - 实现渐响功能和闹钟界面展示
  */
@@ -234,21 +236,32 @@ public class AlarmService extends Service {
     }
 
     /**
-     * 构建前台通知
+     * 构建前台通知 - 包含关闭动作
      */
     private Notification buildNotification() {
         String title = isBedtime ? "就寝时间到" : "起床时间到";
 
-        Intent dismissIntent = new Intent(this, AlarmService.class);
-        dismissIntent.setAction("STOP_ALARM");
+        // 通知栏关闭闹钟的 Intent
+        Intent dismissIntent = new Intent(this, AlarmReceiver.class);
+        dismissIntent.setAction(AlarmManagerHelper.ACTION_STOP_ALARM);
+        PendingIntent dismissPI = PendingIntent.getBroadcast(this, 0, dismissIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        // 点击通知打开闹钟界面
+        Intent openIntent = new Intent(this, AlarmAlertActivity.class);
+        openIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent openPI = PendingIntent.getActivity(this, 1, openIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(title)
-                .setContentText("滑动以关闭闹钟")
+                .setContentText("点击打开闹钟界面")
                 .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setOngoing(true)
+                .setContentIntent(openPI)
+                .addAction(android.R.drawable.ic_media_pause, "关闭闹钟", dismissPI)
                 .build();
     }
 

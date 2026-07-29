@@ -2,74 +2,77 @@ package com.sleepalarm.app.ui;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.RectF;
-import android.graphics.SweepGradient;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
 /**
- * iOS风格环形时钟View - 两个可拖拽圆点代表就寝和起床时间
- * 中间高亮弧线代表睡眠时长，点击弧线可整体拖拽
+ * iOS 时钟"就寝"风格环形时钟 View
+ * - 12 小时制表盘，显示 1-12 数字刻度
+ * - 粗橙色弧线表示睡眠时长
+ * - 中心显示睡眠时长 "X小时"
+ * - 可拖拽的就寝/起床圆点
  */
 public class CircleClockView extends View {
 
-    // 颜色
-    private final int colorBedtime = 0xFF5B7FFF;     // 蓝色 - 就寝
-    private final int colorWake = 0xFFFF9F43;         // 橙色 - 起床
-    private final int colorArcStart = 0xFF2D3B6B;     // 弧线起始色（深蓝）
-    private final int colorArcEnd = 0xFF1A2240;       // 弧线结束色（更深蓝）
-    private final int colorTrack = 0xFF2A2A3E;        // 轨道颜色
-    private final int colorBg = 0xFF1C1C2E;           // 背景
-    private final int colorText = 0xFFFFFFFF;
-    private final int colorSubText = 0xFF8E8E9A;
-    private final int colorHighlightArc = 0x335B7FFF; // 高亮弧线半透明
+    // iOS 风格颜色
+    private final int colorBackground = 0xFF000000;     // 纯黑背景
+    private final int colorTrack = 0xFF1C1C1E;          // 刻度盘背景色
+    private final int colorTick = 0xFF8E8E93;           // 灰色刻度
+    private final int colorNumber = 0xFF8E8E93;         // 灰色数字
+    private final int colorSleepArc = 0xFFFF9500;       // 橙色睡眠弧线 (iOS 橙)
+    private final int colorDotBorder = 0xFFFF9500;      // 圆点橙色描边
+    private final int colorDotFill = 0xFF000000;        // 圆点黑色填充
+    private final int colorDotIcon = 0xFFFFFFFF;        // 圆点白色图标
+    private final int colorCenterHour = 0xFFFFFFFF;     // 中心小时数字白色
+    private final int colorCenterUnit = 0xFF8E8E93;     // "小时" 灰色
 
     // 尺寸
-    private float centerX, centerY, radius;
-    private float trackWidth = 28f;          // 轨道宽度
-    private float dotRadius = 18f;           // 拖拽点半径
-    private float dotStrokeWidth = 4f;       // 拖拽点描边宽度
-    private float tickLength = 10f;          // 刻度长度
+    private float centerX, centerY;
+    private float radius;           // 橙色弧线半径
+    private float numberRadius;     // 数字半径
+    private float tickOuterRadius;  // 刻度外半径
+    private float tickInnerRadius;  // 刻度内半径
 
-    // 就寝角度（度数，0=12点方向，顺时针）
-    private float bedtimeAngle = 330f;  // 22:00 = 330度 (22/24*360)
-    // 起床角度
-    private float wakeAngle = 105f;     // 07:00 = 105度 (7/24*360)
+    private float arcWidth = 42f;   // 橙色弧线宽度（粗）
+    private float dotRadius = 22f;  // 圆点半径
+    private float dotBorderWidth = 3f;
+    private float tickLength = 12f;
 
-    // 触摸状态
-    private int activeDrag = 0; // 0=none, 1=bedtime dot, 2=wake dot, 3=arc
+    // 时间状态（24小时制）
+    private int bedtimeHour = 23;
+    private int bedtimeMinute = 0;
+    private int wakeHour = 6;
+    private int wakeMinute = 0;
+
+    // 触摸状态 0=none, 1=bedtime, 2=wake, 3=arc
+    private int activeDrag = 0;
     private float dragStartAngle;
-    private float dragStartBedtimeAngle;
-    private float dragStartWakeAngle;
+    private int dragStartBedtimeTotal;
+    private int dragStartWakeTotal;
+    private int dragStartSleepMinutes;
 
-    // 回调
     private OnTimeChangedListener listener;
-
-    // 画笔
-    private Paint trackPaint;
-    private Paint arcPaint;
-    private Paint dotBedtimePaint;
-    private Paint dotWakePaint;
-    private Paint dotStrokePaint;
-    private Paint tickPaint;
-    private Paint textPaint;
-    private Paint timeBigPaint;
-    private Paint labelPaint;
-    private Paint iconPaint;
-    private Paint sleepArcPaint;
-
-    // 弧形路径
-    private RectF arcRect;
-    private Path arcPath;
 
     public interface OnTimeChangedListener {
         void onTimesChanged(int bedtimeHour, int bedtimeMinute, int wakeHour, int wakeMinute);
     }
+
+    // 画笔
+    private Paint tickPaint;
+    private Paint numberPaint;
+    private Paint arcPaint;
+    private Paint dotBorderPaint;
+    private Paint dotFillPaint;
+    private Paint iconPaint;
+    private Paint centerHourPaint;
+    private Paint centerUnitPaint;
+    private Paint sleepBgPaint;
+
+    private RectF arcRect = new RectF();
 
     public CircleClockView(Context context) {
         super(context);
@@ -82,255 +85,196 @@ public class CircleClockView extends View {
     }
 
     private void init() {
-        // 轨道画笔
-        trackPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        trackPaint.setStyle(Paint.Style.STROKE);
-        trackPaint.setStrokeWidth(trackWidth);
-        trackPaint.setColor(colorTrack);
-        trackPaint.setStrokeCap(Paint.Cap.ROUND);
-
-        // 高亮睡眠弧线
-        sleepArcPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        sleepArcPaint.setStyle(Paint.Style.STROKE);
-        sleepArcPaint.setStrokeWidth(trackWidth);
-        sleepArcPaint.setStrokeCap(Paint.Cap.ROUND);
-
-        // 就寝点画笔
-        dotBedtimePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        dotBedtimePaint.setStyle(Paint.Style.FILL);
-        dotBedtimePaint.setColor(colorBedtime);
-
-        // 起床点画笔
-        dotWakePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        dotWakePaint.setStyle(Paint.Style.FILL);
-        dotWakePaint.setColor(colorWake);
-
-        // 点描边
-        dotStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        dotStrokePaint.setStyle(Paint.Style.STROKE);
-        dotStrokePaint.setStrokeWidth(dotStrokeWidth);
-        dotStrokePaint.setColor(Color.WHITE);
-
-        // 刻度画笔
+        // 刻度
         tickPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         tickPaint.setStyle(Paint.Style.STROKE);
         tickPaint.setStrokeWidth(1.5f);
-        tickPaint.setColor(0xFF4A4A5E);
+        tickPaint.setColor(colorTick);
+        tickPaint.setStrokeCap(Paint.Cap.ROUND);
 
-        // 文字画笔
-        textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        textPaint.setColor(colorSubText);
-        textPaint.setTextSize(28f);
-        textPaint.setTextAlign(Paint.Align.CENTER);
+        // 数字
+        numberPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        numberPaint.setColor(colorNumber);
+        numberPaint.setTextSize(26f);
+        numberPaint.setTextAlign(Paint.Align.CENTER);
 
-        // 时间大字画笔
-        timeBigPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        timeBigPaint.setColor(colorText);
-        timeBigPaint.setTextSize(26f);
-        timeBigPaint.setTextAlign(Paint.Align.CENTER);
-        timeBigPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        // 睡眠弧线
+        arcPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        arcPaint.setStyle(Paint.Style.STROKE);
+        arcPaint.setStrokeWidth(arcWidth);
+        arcPaint.setColor(colorSleepArc);
+        arcPaint.setStrokeCap(Paint.Cap.ROUND);
 
-        // 标签画笔
-        labelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        labelPaint.setColor(colorSubText);
-        labelPaint.setTextSize(22f);
-        labelPaint.setTextAlign(Paint.Align.CENTER);
+        // 圆点描边
+        dotBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        dotBorderPaint.setStyle(Paint.Style.STROKE);
+        dotBorderPaint.setStrokeWidth(dotBorderWidth);
+        dotBorderPaint.setColor(colorDotBorder);
 
-        // 图标画笔
+        // 圆点填充
+        dotFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        dotFillPaint.setStyle(Paint.Style.FILL);
+        dotFillPaint.setColor(colorDotFill);
+
+        // 图标（用字符绘制）
         iconPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        iconPaint.setColor(Color.WHITE);
-        iconPaint.setTextSize(28f);
+        iconPaint.setColor(colorDotIcon);
+        iconPaint.setTextSize(20f);
         iconPaint.setTextAlign(Paint.Align.CENTER);
 
-        arcRect = new RectF();
-        arcPath = new Path();
-    }
+        // 中心小时
+        centerHourPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        centerHourPaint.setColor(colorCenterHour);
+        centerHourPaint.setTextSize(64f);
+        centerHourPaint.setTextAlign(Paint.Align.CENTER);
+        centerHourPaint.setTypeface(Typeface.DEFAULT_BOLD);
 
-    /**
-     * 从时间计算角度（0=12点，顺时针）
-     */
-    private float timeToAngle(int hour, int minute) {
-        float totalMinutes = hour * 60f + minute;
-        return (totalMinutes / 1440f) * 360f;
-    }
+        // 中心单位
+        centerUnitPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        centerUnitPaint.setColor(colorCenterUnit);
+        centerUnitPaint.setTextSize(24f);
+        centerUnitPaint.setTextAlign(Paint.Align.CENTER);
 
-    /**
-     * 从角度计算小时
-     */
-    private int angleToHour(float angle) {
-        float totalMinutes = (angle % 360f + 360f) % 360f / 360f * 1440f;
-        return ((int) (totalMinutes / 60f)) % 24;
-    }
-
-    /**
-     * 从角度计算分钟
-     */
-    private int angleToMinute(float angle) {
-        float totalMinutes = (angle % 360f + 360f) % 360f / 360f * 1440f;
-        return ((int) totalMinutes) % 60;
-    }
-
-    /**
-     * 角度转坐标
-     */
-    private float[] angleToPoint(float angle) {
-        float rad = (float) Math.toRadians(angle - 90); // 0度在12点方向
-        return new float[]{
-                centerX + radius * (float) Math.cos(rad),
-                centerY + radius * (float) Math.sin(rad)
-        };
-    }
-
-    /**
-     * 坐标转角度
-     */
-    private float pointToAngle(float x, float y) {
-        float dx = x - centerX;
-        float dy = y - centerY;
-        float rad = (float) Math.atan2(dy, dx);
-        float deg = (float) Math.toDegrees(rad) + 90; // 0度在12点
-        if (deg < 0) deg += 360;
-        return deg;
+        // 睡眠背景（刻度盘浅灰圆）
+        sleepBgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        sleepBgPaint.setStyle(Paint.Style.FILL);
+        sleepBgPaint.setColor(colorTrack);
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        float padding = 60f;
+        float padding = 48f;
         float size = Math.min(w, h);
         centerX = w / 2f;
         centerY = h / 2f;
-        radius = (size / 2f) - padding - dotRadius;
+        radius = (size / 2f) - padding - arcWidth / 2f;
+        numberRadius = radius - arcWidth / 2f - 32f;
+        tickOuterRadius = numberRadius + 12f;
+        tickInnerRadius = numberRadius - 6f;
         arcRect.set(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawColor(colorBg);
+        canvas.drawColor(colorBackground);
 
-        // 1. 小时刻度
-        drawTicks(canvas);
+        // 1. 刻度盘背景圆
+        canvas.drawCircle(centerX, centerY, numberRadius + 20f, sleepBgPaint);
 
-        // 2. 轨道圆环
-        canvas.drawArc(arcRect, 0, 360, false, trackPaint);
+        // 2. 小时刻度和数字
+        drawTicksAndNumbers(canvas);
 
-        // 3. 睡眠高亮弧线（从就寝角到起床角，顺时针）
-        float sleepStart = bedtimeAngle;
-        float sleepSweep = (wakeAngle - bedtimeAngle + 360) % 360;
-        sleepArcPaint.setShader(null);
-        sleepArcPaint.setColor(colorHighlightArc);
-        canvas.drawArc(arcRect, sleepStart, sleepSweep, false, sleepArcPaint);
+        // 3. 橙色睡眠弧线
+        drawSleepArc(canvas);
 
-        // 渐变高亮弧线（外层细线效果）
-        Paint glowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        glowPaint.setStyle(Paint.Style.STROKE);
-        glowPaint.setStrokeWidth(trackWidth * 0.6f);
-        glowPaint.setStrokeCap(Paint.Cap.ROUND);
+        // 4. 圆点
+        drawDot(canvas, bedtimeHour, bedtimeMinute, "🌙");
+        drawDot(canvas, wakeHour, wakeMinute, "🔔");
 
-        // 用渐变绘制从就寝到起床的弧线
-        float[] pts = angleToPoint(bedtimeAngle);
-        float[] pte = angleToPoint(wakeAngle);
-        SweepGradient gradient = new SweepGradient(centerX, centerY,
-                new int[]{colorBedtime, colorWake},
-                new float[]{bedtimeAngle / 360f, wakeAngle / 360f});
-        glowPaint.setShader(gradient);
-        glowPaint.setAlpha(180);
-        canvas.drawArc(arcRect, sleepStart, sleepSweep, false, glowPaint);
-
-        // 4. 拖拽圆点
-        drawDot(canvas, bedtimeAngle, colorBedtime);
-        drawDot(canvas, wakeAngle, colorWake);
-
-        // 5. 中心文字
+        // 5. 中心睡眠时长
         drawCenterText(canvas);
     }
 
-    private void drawTicks(Canvas canvas) {
-        for (int h = 0; h < 24; h++) {
-            float angle = timeToAngle(h, 0);
-            float[] p1 = angleToPointAtRadius(angle, radius - trackWidth / 2 - 4);
-            float[] p2 = angleToPointAtRadius(angle, radius - trackWidth / 2 - 4 - tickLength);
-            canvas.drawLine(p1[0], p1[1], p2[0], p2[1], tickPaint);
+    private void drawTicksAndNumbers(Canvas canvas) {
+        for (int h = 1; h <= 12; h++) {
+            float angle = (h % 12) * 30f; // 12点=0度，顺时针
+            float rad = (float) Math.toRadians(angle - 90);
 
-            // 小时数字
-            float[] tp = angleToPointAtRadius(angle, radius - trackWidth / 2 - 4 - tickLength - 16);
-            String label;
-            if (h == 0) label = "0";
-            else if (h == 6) label = "6";
-            else if (h == 12) label = "12";
-            else if (h == 18) label = "18";
-            else label = String.valueOf(h);
+            // 刻度线
+            float cos = (float) Math.cos(rad);
+            float sin = (float) Math.sin(rad);
+            float x1 = centerX + tickInnerRadius * cos;
+            float y1 = centerY + tickInnerRadius * sin;
+            float x2 = centerX + tickOuterRadius * cos;
+            float y2 = centerY + tickOuterRadius * sin;
+            canvas.drawLine(x1, y1, x2, y2, tickPaint);
 
-            textPaint.setTextSize(22f);
-            canvas.drawText(label, tp[0], tp[1] + 8, textPaint);
+            // 数字
+            float nx = centerX + numberRadius * cos;
+            float ny = centerY + numberRadius * sin;
+            String label = String.valueOf(h);
+            canvas.drawText(label, nx, ny + 9, numberPaint);
         }
     }
 
-    private float[] angleToPointAtRadius(float angle, float r) {
-        float rad = (float) Math.toRadians(angle - 90);
-        return new float[]{
-                centerX + r * (float) Math.cos(rad),
-                centerY + r * (float) Math.sin(rad)
-        };
+    private void drawSleepArc(Canvas canvas) {
+        float startAngle = timeToAngle(bedtimeHour, bedtimeMinute);
+        int sleepMinutes = getSleepDurationMinutes();
+        float sweepAngle = sleepMinutes / 2.0f; // 12小时=720分钟=360度
+
+        canvas.drawArc(arcRect, startAngle - 90, sweepAngle, false, arcPaint);
     }
 
-    private void drawDot(Canvas canvas, float angle, int color) {
-        float[] p = angleToPoint(angle);
+    private void drawDot(Canvas canvas, int hour, int minute, String icon) {
+        float angle = timeToAngle(hour, minute);
+        float rad = (float) Math.toRadians(angle - 90);
+        float x = centerX + radius * (float) Math.cos(rad);
+        float y = centerY + radius * (float) Math.sin(rad);
 
-        // 外阴影
-        Paint shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        shadowPaint.setColor(color);
-        shadowPaint.setAlpha(60);
-        canvas.drawCircle(p[0], p[1], dotRadius + 6, shadowPaint);
-
-        // 主体
-        Paint dotPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        dotPaint.setColor(color);
-        canvas.drawCircle(p[0], p[1], dotRadius, dotPaint);
-
-        // 白色描边
-        canvas.drawCircle(p[0], p[1], dotRadius, dotStrokePaint);
-
+        // 黑色填充
+        canvas.drawCircle(x, y, dotRadius, dotFillPaint);
+        // 橙色描边
+        canvas.drawCircle(x, y, dotRadius, dotBorderPaint);
         // 图标
-        iconPaint.setColor(Color.WHITE);
-        iconPaint.setTextSize(dotRadius * 1.1f);
-        String icon = (color == colorWake) ? "☀" : "☾";
-        canvas.drawText(icon, p[0], p[1] + dotRadius * 0.35f, iconPaint);
+        canvas.drawText(icon, x, y + 7, iconPaint);
     }
 
     private void drawCenterText(Canvas canvas) {
+        int sleepMinutes = getSleepDurationMinutes();
+        int hours = sleepMinutes / 60;
+        int minutes = sleepMinutes % 60;
+
+        String hourText = String.valueOf(hours);
+        String unitText = (minutes > 0) ? "小时" + minutes + "分" : "小时";
+
         float cy = centerY;
-
-        // 就寝时间
-        int bh = angleToHour(bedtimeAngle);
-        int bm = angleToMinute(bedtimeAngle);
-        String bTime = String.format("%02d:%02d", bh, bm);
-        timeBigPaint.setColor(colorBedtime);
-        canvas.drawText(bTime, centerX, cy - 4, timeBigPaint);
-
-        // 起床时间
-        int wh = angleToHour(wakeAngle);
-        int wm = angleToMinute(wakeAngle);
-        String wTime = String.format("%02d:%02d", wh, wm);
-        timeBigPaint.setColor(colorWake);
-        canvas.drawText(wTime, centerX, cy + 32, timeBigPaint);
-
-        // 睡眠时长
-        float totalMin = ((wakeAngle - bedtimeAngle + 360) % 360) / 360f * 1440f;
-        int sleepH = (int) (totalMin / 60);
-        int sleepM = (int) (totalMin % 60);
-        String duration = sleepH + "h " + sleepM + "m";
-        labelPaint.setTextSize(20f);
-        labelPaint.setColor(0xFF6B6B7B);
-        canvas.drawText("睡眠 " + duration, centerX, cy + 58, labelPaint);
-
-        // 就寝和起床标签
-        labelPaint.setTextSize(18f);
-        labelPaint.setColor(colorBedtime);
-        canvas.drawText("就寝", centerX, cy - 30, labelPaint);
-        labelPaint.setColor(colorWake);
+        canvas.drawText(hourText, centerX - 20, cy + 20, centerHourPaint);
+        canvas.drawText(unitText, centerX + 35, cy + 16, centerUnitPaint);
     }
+
+    // ===== 时间/角度转换 =====
+
+    /**
+     * 24小时制时间 -> 12小时制表盘角度（0=12点，顺时针）
+     */
+    private float timeToAngle(int hour, int minute) {
+        int h12 = hour % 12;
+        return (h12 * 30f + minute * 0.5f) % 360f;
+    }
+
+    /**
+     * 表盘角度 + 当前小时 -> 24小时制时间
+     */
+    private int[] angleToTime24(float angle, int currentHour) {
+        float normalized = normalizeAngle(angle);
+        float totalMinutes12 = normalized / 360f * 720f;
+        int h12 = ((int) (totalMinutes12 / 60f)) % 12;
+        int minute = ((int) totalMinutes12) % 60;
+
+        int h1 = h12;
+        int h2 = (h12 + 12) % 24;
+
+        int diff1 = Math.min(Math.abs(h1 - currentHour), 24 - Math.abs(h1 - currentHour));
+        int diff2 = Math.min(Math.abs(h2 - currentHour), 24 - Math.abs(h2 - currentHour));
+
+        int hour = diff1 <= diff2 ? h1 : h2;
+        return new int[]{hour, minute};
+    }
+
+    private float normalizeAngle(float angle) {
+        return ((angle % 360f) + 360f) % 360f;
+    }
+
+    private int getSleepDurationMinutes() {
+        int bed = bedtimeHour * 60 + bedtimeMinute;
+        int wake = wakeHour * 60 + wakeMinute;
+        if (wake >= bed) return wake - bed;
+        return (24 * 60 - bed) + wake;
+    }
+
+    // ===== 触摸处理 =====
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -338,32 +282,29 @@ public class CircleClockView extends View {
         float y = event.getY();
         float touchAngle = pointToAngle(x, y);
         float dist = (float) Math.sqrt((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY));
-        float touchSlop = 40f;
+        float touchSlop = 50f;
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                // 检查是否触摸了就寝点
-                float[] bp = angleToPoint(bedtimeAngle);
+                float[] bp = getDotPosition(bedtimeHour, bedtimeMinute);
                 if (distToPoint(x, y, bp[0], bp[1]) < dotRadius + touchSlop) {
                     activeDrag = 1;
                     dragStartAngle = touchAngle;
                     return true;
                 }
-                // 检查是否触摸了起床点
-                float[] wp = angleToPoint(wakeAngle);
+                float[] wp = getDotPosition(wakeHour, wakeMinute);
                 if (distToPoint(x, y, wp[0], wp[1]) < dotRadius + touchSlop) {
                     activeDrag = 2;
                     dragStartAngle = touchAngle;
                     return true;
                 }
-                // 检查是否触摸了弧线（靠近轨道）
-                if (Math.abs(dist - radius) < trackWidth + touchSlop) {
-                    // 检查触摸角度是否在睡眠弧线上
+                if (Math.abs(dist - radius) < arcWidth / 2 + touchSlop) {
                     if (isAngleInSleepArc(touchAngle)) {
                         activeDrag = 3;
-                        dragStartBedtimeAngle = bedtimeAngle;
-                        dragStartWakeAngle = wakeAngle;
                         dragStartAngle = touchAngle;
+                        dragStartBedtimeTotal = bedtimeHour * 60 + bedtimeMinute;
+                        dragStartWakeTotal = wakeHour * 60 + wakeMinute;
+                        dragStartSleepMinutes = getSleepDurationMinutes();
                         return true;
                     }
                 }
@@ -372,40 +313,42 @@ public class CircleClockView extends View {
             case MotionEvent.ACTION_MOVE:
                 if (activeDrag == 0) break;
 
-                float deltaAngle = touchAngle - dragStartAngle;
-
                 if (activeDrag == 1) {
-                    // 拖拽就寝点：仅更新就寝角度
-                    bedtimeAngle = (dragStartAngle + deltaAngle - bedtimeAngle + bedtimeAngle);
-                    // 换算：保持初始的偏移量
-                    bedtimeAngle = normalizeAngle(bedtimeAngle + deltaAngle - (touchAngle - dragStartAngle));
-                    // 简化：直接使用当前触摸角度
-                    bedtimeAngle = normalizeAngle(touchAngle);
+                    // 拖拽就寝点：保持睡眠时长不变
+                    int[] bt = angleToTime24(touchAngle, bedtimeHour);
+                    bedtimeHour = bt[0];
+                    bedtimeMinute = bt[1];
+                    // 保持睡眠时长，重新计算起床时间
+                    int wakeTotal = bedtimeHour * 60 + bedtimeMinute + getSleepDurationMinutes();
+                    wakeTotal = wakeTotal % (24 * 60);
+                    wakeHour = wakeTotal / 60;
+                    wakeMinute = wakeTotal % 60;
                 } else if (activeDrag == 2) {
-                    wakeAngle = normalizeAngle(touchAngle);
+                    // 拖拽起床点：改变睡眠时长
+                    int[] wt = angleToTime24(touchAngle, wakeHour);
+                    wakeHour = wt[0];
+                    wakeMinute = wt[1];
                 } else if (activeDrag == 3) {
                     // 整体拖拽：保持睡眠时长不变
                     float angleDelta = touchAngle - dragStartAngle;
-                    bedtimeAngle = normalizeAngle(dragStartBedtimeAngle + angleDelta);
-                    wakeAngle = normalizeAngle(dragStartWakeAngle + angleDelta);
+                    int minuteDelta = (int) (angleDelta / 360f * 720f); // 12小时制角度转分钟
+                    int newBedTotal = (dragStartBedtimeTotal + minuteDelta) % (24 * 60);
+                    if (newBedTotal < 0) newBedTotal += 24 * 60;
+                    bedtimeHour = newBedTotal / 60;
+                    bedtimeMinute = newBedTotal % 60;
+                    int newWakeTotal = (newBedTotal + dragStartSleepMinutes) % (24 * 60);
+                    wakeHour = newWakeTotal / 60;
+                    wakeMinute = newWakeTotal % 60;
                     dragStartAngle = touchAngle;
-                    dragStartBedtimeAngle = bedtimeAngle;
-                    dragStartWakeAngle = wakeAngle;
+                    dragStartBedtimeTotal = bedtimeHour * 60 + bedtimeMinute;
                 }
 
-                // 确保就寝和起床不重叠（至少10分钟间隔）
-                float minGap = (10f / 1440f) * 360f;
-                if (activeDrag == 1 || activeDrag == 3) {
-                    float gap = (wakeAngle - bedtimeAngle + 360) % 360;
-                    if (gap < minGap) {
-                        bedtimeAngle = normalizeAngle(wakeAngle - minGap);
-                    }
-                }
-                if (activeDrag == 2 || activeDrag == 3) {
-                    float gap = (wakeAngle - bedtimeAngle + 360) % 360;
-                    if (gap < minGap) {
-                        wakeAngle = normalizeAngle(bedtimeAngle + minGap);
-                    }
+                // 防止就寝和起床重叠（至少15分钟）
+                if (getSleepDurationMinutes() < 15) {
+                    int bedTotal = bedtimeHour * 60 + bedtimeMinute;
+                    int wakeTotal = (bedTotal + 15) % (24 * 60);
+                    wakeHour = wakeTotal / 60;
+                    wakeMinute = wakeTotal % 60;
                 }
 
                 invalidate();
@@ -421,20 +364,31 @@ public class CircleClockView extends View {
         return super.onTouchEvent(event);
     }
 
-    /**
-     * 检查角度是否在睡眠弧线范围内（从就寝顺时针到起床）
-     */
+    private float[] getDotPosition(int hour, int minute) {
+        float angle = timeToAngle(hour, minute);
+        float rad = (float) Math.toRadians(angle - 90);
+        return new float[]{
+                centerX + radius * (float) Math.cos(rad),
+                centerY + radius * (float) Math.sin(rad)
+        };
+    }
+
+    private float pointToAngle(float x, float y) {
+        float dx = x - centerX;
+        float dy = y - centerY;
+        float rad = (float) Math.atan2(dy, dx);
+        float deg = (float) Math.toDegrees(rad) + 90;
+        if (deg < 0) deg += 360;
+        return deg;
+    }
+
     private boolean isAngleInSleepArc(float angle) {
-        float start = bedtimeAngle;
-        float end = wakeAngle;
-        if (end < start) end += 360;
+        float start = timeToAngle(bedtimeHour, bedtimeMinute);
+        float sweep = getSleepDurationMinutes() / 2.0f;
+        float end = start + sweep;
         float a = angle;
         if (a < start) a += 360;
         return a >= start && a <= end;
-    }
-
-    private float normalizeAngle(float angle) {
-        return ((angle % 360) + 360) % 360;
     }
 
     private float distToPoint(float x1, float y1, float x2, float y2) {
@@ -445,10 +399,7 @@ public class CircleClockView extends View {
 
     private void notifyListener() {
         if (listener != null) {
-            listener.onTimesChanged(
-                    angleToHour(bedtimeAngle), angleToMinute(bedtimeAngle),
-                    angleToHour(wakeAngle), angleToMinute(wakeAngle)
-            );
+            listener.onTimesChanged(bedtimeHour, bedtimeMinute, wakeHour, wakeMinute);
         }
     }
 
@@ -458,21 +409,17 @@ public class CircleClockView extends View {
         this.listener = l;
     }
 
-    public void setBedtime(int hour, int minute) {
-        this.bedtimeAngle = timeToAngle(hour, minute);
+    public void setTimes(int bedtimeHour, int bedtimeMinute, int wakeHour, int wakeMinute) {
+        this.bedtimeHour = bedtimeHour;
+        this.bedtimeMinute = bedtimeMinute;
+        this.wakeHour = wakeHour;
+        this.wakeMinute = wakeMinute;
         invalidate();
     }
 
-    public void setWakeTime(int hour, int minute) {
-        this.wakeAngle = timeToAngle(hour, minute);
-        invalidate();
-    }
-
-    public int getBedtimeHour() { return angleToHour(bedtimeAngle); }
-    public int getBedtimeMinute() { return angleToMinute(bedtimeAngle); }
-    public int getWakeHour() { return angleToHour(wakeAngle); }
-    public int getWakeMinute() { return angleToMinute(wakeAngle); }
-
-    public float getBedtimeAngle() { return bedtimeAngle; }
-    public float getWakeAngle() { return wakeAngle; }
+    public int getBedtimeHour() { return bedtimeHour; }
+    public int getBedtimeMinute() { return bedtimeMinute; }
+    public int getWakeHour() { return wakeHour; }
+    public int getWakeMinute() { return wakeMinute; }
+    public int getSleepDuration() { return getSleepDurationMinutes(); }
 }

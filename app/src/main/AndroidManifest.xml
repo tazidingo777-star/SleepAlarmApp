@@ -43,7 +43,7 @@
         <activity
             android:name=".ui.DailyBriefingActivity"
             android:launchMode="singleTop"
-            android:theme="@style/Theme.SleepAlarm" />
+            android:theme="@style/Theme.SleepAlarm.Briefing" />
 
         <service
             android:name=".AlarmService"
@@ -52,7 +52,11 @@
 
         <receiver
             android:name=".AlarmReceiver"
-            android:exported="true" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.sleepalarm.app.STOP_ALARM" />
+            </intent-filter>
+        </receiver>
 
         <receiver
             android:name=".BootReceiver"

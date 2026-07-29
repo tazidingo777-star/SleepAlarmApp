@@ -7,7 +7,7 @@
     <item
         android:id="@+id/nav_sleep"
         android:icon="@drawable/ic_sleep"
-        android:title="睡眠" />
+        android:title="就寝" />
     <item
         android:id="@+id/nav_stopwatch"
         android:icon="@drawable/ic_stopwatch"
@@ -15,5 +15,5 @@
     <item
         android:id="@+id/nav_timer"
         android:icon="@drawable/ic_timer"
-        android:title="计时" />
+        android:title="计时器" />
 </menu>

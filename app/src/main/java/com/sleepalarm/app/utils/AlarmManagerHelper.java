@@ -24,6 +24,8 @@ public class AlarmManagerHelper {
     public static final String EXTRA_BEDTIME_HOUR = "bedtime_hour";
     public static final String EXTRA_BEDTIME_MINUTE = "bedtime_minute";
     public static final String EXTRA_GRADUAL_MINUTES = "gradual_minutes";
+    public static final String EXTRA_IS_SNOOZE = "is_snooze";
+    public static final String ACTION_STOP_ALARM = "com.sleepalarm.app.STOP_ALARM";
 
     // requestCode 范围: 0-99999 = 普通闹钟, 100000-199999 = 睡眠起床, 200000-299999 = 睡眠就寝
     private static final int REGULAR_BASE = 0;
@@ -185,6 +187,51 @@ public class AlarmManagerHelper {
                     pi.cancel();
                 }
             }
+        }
+    }
+
+    // ==================== 稍后提醒 ====================
+
+    private static final int SNOOZE_BASE = 300000;
+
+    public static void setSnoozeAlarm(Context context, int hour, int minute) {
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, hour);
+        cal.set(Calendar.MINUTE, minute);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        Intent intent = new Intent(context, AlarmReceiver.class);
+        intent.putExtra(EXTRA_IS_REGULAR, false);
+        intent.putExtra(EXTRA_IS_SNOOZE, true);
+        intent.putExtra(EXTRA_IS_BEDTIME, false);
+        intent.putExtra(EXTRA_WAKE_HOUR, hour);
+        intent.putExtra(EXTRA_WAKE_MINUTE, minute);
+        intent.putExtra(EXTRA_GRADUAL_MINUTES, 5);
+
+        PendingIntent pi = PendingIntent.getBroadcast(context, SNOOZE_BASE, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+        } else {
+            am.setExact(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+        }
+    }
+
+    public static void cancelSnoozeAlarm(Context context) {
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+
+        Intent intent = new Intent(context, AlarmReceiver.class);
+        PendingIntent pi = PendingIntent.getBroadcast(context, SNOOZE_BASE, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        if (pi != null) {
+            am.cancel(pi);
+            pi.cancel();
         }
     }
 
