@@ -33,6 +33,7 @@
     <color name="bedtime_color">#FF9500</color>
     <color name="wake_color">#FF9500</color>
     <color name="dismiss_red">#FF3B30</color>
+    <color name="ios_switch_track">#2C2C2E</color>
 
     <!-- 基础 -->
     <color name="white">#FFFFFF</color>

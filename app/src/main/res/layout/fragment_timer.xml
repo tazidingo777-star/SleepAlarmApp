@@ -8,7 +8,7 @@
     android:gravity="center_horizontal"
     android:padding="16dp">
 
-    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.08" />
+    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.06" />
 
     <!-- 倒计时大显示（运行时显示） -->
     <TextView
@@ -38,7 +38,10 @@
             android:textColor="@color/text_primary"
             android:fontFamily="sans-serif-thin"
             android:textStyle="bold"
-            android:gravity="center" />
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground" />
 
         <TextView
             android:layout_width="24dp"
@@ -58,7 +61,10 @@
             android:textColor="@color/text_primary"
             android:fontFamily="sans-serif-thin"
             android:textStyle="bold"
-            android:gravity="center" />
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground" />
 
         <TextView
             android:layout_width="24dp"
@@ -78,7 +84,10 @@
             android:textColor="@color/text_primary"
             android:fontFamily="sans-serif-thin"
             android:textStyle="bold"
-            android:gravity="center" />
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground" />
     </LinearLayout>
 
     <!-- 时/分/秒 标签 -->
@@ -101,100 +110,50 @@
             android:gravity="center" />
     </LinearLayout>
 
-    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.08" />
+    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.06" />
 
-    <!-- 数字键盘 -->
-    <GridLayout
+    <!-- 操作按钮 -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:columnCount="3"
-        android:rowCount="4">
+        android:orientation="horizontal"
+        android:gravity="center">
 
+        <!-- 停止按钮 -->
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_num_1"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="80dp" android:layout_height="60dp"
-            android:text="1" android:textSize="24sp" android:textColor="@color/text_primary" />
+            android:id="@+id/btn_timer_stop"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="76dp"
+            android:layout_height="76dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            android:padding="0dp"
+            app:icon="@drawable/ic_stop_square"
+            app:iconSize="28dp"
+            app:iconGravity="textStart"
+            app:cornerRadius="38dp"
+            app:strokeColor="@color/gray_light"
+            android:layout_marginEnd="20dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_num_2"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="80dp" android:layout_height="60dp"
-            android:text="2" android:textSize="24sp" android:textColor="@color/text_primary" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_num_3"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="80dp" android:layout_height="60dp"
-            android:text="3" android:textSize="24sp" android:textColor="@color/text_primary" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_num_4"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="80dp" android:layout_height="60dp"
-            android:text="4" android:textSize="24sp" android:textColor="@color/text_primary" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_num_5"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="80dp" android:layout_height="60dp"
-            android:text="5" android:textSize="24sp" android:textColor="@color/text_primary" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_num_6"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="80dp" android:layout_height="60dp"
-            android:text="6" android:textSize="24sp" android:textColor="@color/text_primary" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_num_7"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="80dp" android:layout_height="60dp"
-            android:text="7" android:textSize="24sp" android:textColor="@color/text_primary" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_num_8"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="80dp" android:layout_height="60dp"
-            android:text="8" android:textSize="24sp" android:textColor="@color/text_primary" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_num_9"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="80dp" android:layout_height="60dp"
-            android:text="9" android:textSize="24sp" android:textColor="@color/text_primary" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_timer_clear"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="80dp" android:layout_height="60dp"
-            android:text="C" android:textSize="22sp" android:textColor="@color/wake_color" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_num_0"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="80dp" android:layout_height="60dp"
-            android:text="0" android:textSize="24sp" android:textColor="@color/text_primary" />
-
+        <!-- 开始/暂停按钮 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_timer_start"
-            android:layout_width="80dp" android:layout_height="60dp"
-            android:text="开始" android:textSize="18sp"
-            app:cornerRadius="30dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            android:padding="0dp"
+            app:icon="@drawable/ic_play_triangle"
+            app:iconSize="32dp"
+            app:iconGravity="textStart"
+            app:cornerRadius="40dp"
             app:backgroundTint="@color/primary"
             style="@style/Widget.Material3.Button" />
-    </GridLayout>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_timer_reset"
-        style="@style/Widget.Material3.Button.OutlinedButton"
-        android:layout_width="200dp"
-        android:layout_height="48dp"
-        android:text="重置"
-        android:textSize="16sp"
-        android:textColor="@color/text_secondary"
-        app:strokeColor="@color/gray_light"
-        android:layout_marginTop="16dp" />
+    </LinearLayout>
 
     <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.08" />
 </LinearLayout>

@@ -1,13 +1,15 @@
 package com.sleepalarm.app.ui;
 
+import android.app.Dialog;
+import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -22,14 +24,12 @@ import java.util.Locale;
 public class TimerFragment extends Fragment {
 
     private TextView tvTimerDisplay, tvHours, tvMinutes, tvSeconds;
-    private MaterialButton btnNum1, btnNum2, btnNum3, btnNum4, btnNum5,
-            btnNum6, btnNum7, btnNum8, btnNum9, btnNum0;
-    private MaterialButton btnClear, btnStart, btnReset;
+    private MaterialButton btnStart, btnStop;
 
-    private StringBuilder input = new StringBuilder();
     private long totalSeconds = 0;
     private CountDownTimer countDownTimer;
     private boolean isRunning = false;
+    private boolean isPaused = false;
 
     @Nullable
     @Override
@@ -41,77 +41,147 @@ public class TimerFragment extends Fragment {
         tvHours = v.findViewById(R.id.tv_hours);
         tvMinutes = v.findViewById(R.id.tv_minutes);
         tvSeconds = v.findViewById(R.id.tv_seconds);
-
-        btnNum0 = v.findViewById(R.id.btn_num_0);
-        btnNum1 = v.findViewById(R.id.btn_num_1);
-        btnNum2 = v.findViewById(R.id.btn_num_2);
-        btnNum3 = v.findViewById(R.id.btn_num_3);
-        btnNum4 = v.findViewById(R.id.btn_num_4);
-        btnNum5 = v.findViewById(R.id.btn_num_5);
-        btnNum6 = v.findViewById(R.id.btn_num_6);
-        btnNum7 = v.findViewById(R.id.btn_num_7);
-        btnNum8 = v.findViewById(R.id.btn_num_8);
-        btnNum9 = v.findViewById(R.id.btn_num_9);
-        btnClear = v.findViewById(R.id.btn_timer_clear);
         btnStart = v.findViewById(R.id.btn_timer_start);
-        btnReset = v.findViewById(R.id.btn_timer_reset);
+        btnStop = v.findViewById(R.id.btn_timer_stop);
 
-        View.OnClickListener numListener = view -> {
+        btnStop.setEnabled(false);
+
+        // Click time texts to edit via wheel picker
+        tvHours.setOnClickListener(view -> {
             if (isRunning) return;
-            MaterialButton btn = (MaterialButton) view;
-            String num = btn.getText().toString();
-            if (input.length() < 6) { // HHMMSS max
-                input.append(num);
+            showNumberPicker("设置小时", 0, 23, getHours(), val -> {
+                setHours(val);
                 updateDisplay();
-            }
-        };
-
-        btnNum0.setOnClickListener(numListener);
-        btnNum1.setOnClickListener(numListener);
-        btnNum2.setOnClickListener(numListener);
-        btnNum3.setOnClickListener(numListener);
-        btnNum4.setOnClickListener(numListener);
-        btnNum5.setOnClickListener(numListener);
-        btnNum6.setOnClickListener(numListener);
-        btnNum7.setOnClickListener(numListener);
-        btnNum8.setOnClickListener(numListener);
-        btnNum9.setOnClickListener(numListener);
-
-        btnClear.setOnClickListener(view -> {
-            if (input.length() > 0) {
-                input.deleteCharAt(input.length() - 1);
-                updateDisplay();
-            }
+            });
         });
-        btnClear.setOnLongClickListener(view -> {
-            input.setLength(0);
-            updateDisplay();
-            return true;
+        tvMinutes.setOnClickListener(view -> {
+            if (isRunning) return;
+            showNumberPicker("设置分钟", 0, 59, getMinutes(), val -> {
+                setMinutes(val);
+                updateDisplay();
+            });
+        });
+        tvSeconds.setOnClickListener(view -> {
+            if (isRunning) return;
+            showNumberPicker("设置秒", 0, 59, getSeconds(), val -> {
+                setSeconds(val);
+                updateDisplay();
+            });
         });
 
         btnStart.setOnClickListener(view -> {
-            if (isRunning) {
+            if (isRunning && !isPaused) {
                 pauseTimer();
             } else {
                 startTimer();
             }
         });
 
-        btnReset.setOnClickListener(view -> {
+        btnStop.setOnClickListener(view -> {
             stopTimer();
-            input.setLength(0);
-            updateDisplay();
         });
 
         updateDisplay();
         return v;
     }
 
+    private int getHours() {
+        return (int) (totalSeconds / 3600);
+    }
+
+    private int getMinutes() {
+        return (int) ((totalSeconds % 3600) / 60);
+    }
+
+    private int getSeconds() {
+        return (int) (totalSeconds % 60);
+    }
+
+    private void setHours(int h) {
+        int m = getMinutes();
+        int s = getSeconds();
+        totalSeconds = h * 3600L + m * 60L + s;
+        updateDisplay();
+    }
+
+    private void setMinutes(int m) {
+        int h = getHours();
+        int s = getSeconds();
+        totalSeconds = h * 3600L + m * 60L + s;
+        updateDisplay();
+    }
+
+    private void setSeconds(int s) {
+        int h = getHours();
+        int m = getMinutes();
+        totalSeconds = h * 3600L + m * 60L + s;
+        updateDisplay();
+    }
+
+    private void showNumberPicker(String title, int min, int max, int initial, ValueCallback callback) {
+        Dialog dialog = new Dialog(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_NoActionBar);
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+        LinearLayout root = new LinearLayout(requireContext());
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setPadding(40, 28, 40, 28);
+        root.setBackgroundColor(0xFF1C1C1E);
+        root.setGravity(android.view.Gravity.CENTER_HORIZONTAL);
+
+        TextView tvTitle = new TextView(requireContext());
+        tvTitle.setText(title);
+        tvTitle.setTextSize(17);
+        tvTitle.setTextColor(Color.parseColor("#8E8E93"));
+        tvTitle.setPadding(0, 0, 0, 16);
+        root.addView(tvTitle);
+
+        NumberPicker picker = new NumberPicker(requireContext());
+        picker.setMinValue(min);
+        picker.setMaxValue(max);
+        picker.setValue(initial);
+        picker.setFormatter(i -> String.format("%02d", i));
+        picker.setTextColor(Color.WHITE);
+        picker.setDividerColor(Color.parseColor("#FF9500"));
+        root.addView(picker);
+
+        LinearLayout btnRow = new LinearLayout(requireContext());
+        btnRow.setOrientation(LinearLayout.HORIZONTAL);
+        btnRow.setGravity(android.view.Gravity.CENTER);
+        btnRow.setPadding(0, 20, 0, 0);
+
+        TextView btnCancel = new TextView(requireContext());
+        btnCancel.setText("取消");
+        btnCancel.setTextSize(16);
+        btnCancel.setTextColor(Color.parseColor("#8E8E93"));
+        btnCancel.setPadding(40, 12, 40, 12);
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        TextView btnOK = new TextView(requireContext());
+        btnOK.setText("确定");
+        btnOK.setTextSize(16);
+        btnOK.setTextColor(Color.parseColor("#FF9500"));
+        btnOK.setPadding(40, 12, 40, 12);
+        btnOK.setOnClickListener(v -> {
+            dialog.dismiss();
+            callback.onValue(picker.getValue());
+        });
+
+        btnRow.addView(btnCancel);
+        btnRow.addView(btnOK);
+        root.addView(btnRow);
+
+        dialog.setContentView(root);
+        dialog.show();
+    }
+
+    private interface ValueCallback {
+        void onValue(int value);
+    }
+
     private void updateDisplay() {
-        parseInput();
-        int h = (int) (totalSeconds / 3600);
-        int m = (int) ((totalSeconds % 3600) / 60);
-        int s = (int) (totalSeconds % 60);
+        int h = getHours();
+        int m = getMinutes();
+        int s = getSeconds();
 
         tvHours.setText(String.format(Locale.getDefault(), "%02d", h));
         tvMinutes.setText(String.format(Locale.getDefault(), "%02d", m));
@@ -129,56 +199,81 @@ public class TimerFragment extends Fragment {
         }
     }
 
-    private void parseInput() {
-        String s = input.toString();
-        while (s.length() < 6) s = "0" + s;
-        int h = Integer.parseInt(s.substring(0, 2));
-        int m = Integer.parseInt(s.substring(2, 4));
-        int sec = Integer.parseInt(s.substring(4, 6));
-        totalSeconds = h * 3600L + m * 60L + sec;
-    }
-
     private void startTimer() {
-        parseInput();
-        if (totalSeconds <= 0) return;
+        if (isPaused) {
+            // Resume
+            isPaused = false;
+            isRunning = true;
+            btnStart.setIconResource(R.drawable.ic_pause);
+            btnStop.setEnabled(true);
 
-        isRunning = true;
-        btnStart.setText("暂停");
-        btnReset.setEnabled(false);
+            countDownTimer = new CountDownTimer(totalSeconds * 1000, 100) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    totalSeconds = millisUntilFinished / 1000;
+                    updateDisplay();
+                }
 
-        countDownTimer = new CountDownTimer(totalSeconds * 1000, 100) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                totalSeconds = millisUntilFinished / 1000;
-                updateDisplay();
-            }
+                @Override
+                public void onFinish() {
+                    totalSeconds = 0;
+                    isRunning = false;
+                    isPaused = false;
+                    btnStart.setIconResource(R.drawable.ic_play_triangle);
+                    btnStop.setEnabled(false);
+                    updateDisplay();
 
-            @Override
-            public void onFinish() {
-                totalSeconds = 0;
-                isRunning = false;
-                btnStart.setText("开始");
-                btnReset.setEnabled(true);
-                updateDisplay();
+                    try {
+                        android.media.MediaPlayer mp = android.media.MediaPlayer.create(
+                                requireContext(),
+                                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
+                        if (mp != null) mp.start();
+                    } catch (Exception ignored) {}
+                }
+            }.start();
+        } else {
+            // Fresh start
+            if (totalSeconds <= 0) return;
+            isRunning = true;
+            isPaused = false;
+            btnStart.setIconResource(R.drawable.ic_pause);
+            btnStop.setEnabled(true);
 
-                // 播放提示音
-                try {
-                    android.media.MediaPlayer mp = android.media.MediaPlayer.create(
-                            requireContext(),
-                            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
-                    if (mp != null) mp.start();
-                } catch (Exception ignored) {}
-            }
-        }.start();
+            countDownTimer = new CountDownTimer(totalSeconds * 1000, 100) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    totalSeconds = millisUntilFinished / 1000;
+                    updateDisplay();
+                }
+
+                @Override
+                public void onFinish() {
+                    totalSeconds = 0;
+                    isRunning = false;
+                    isPaused = false;
+                    btnStart.setIconResource(R.drawable.ic_play_triangle);
+                    btnStop.setEnabled(false);
+                    updateDisplay();
+
+                    try {
+                        android.media.MediaPlayer mp = android.media.MediaPlayer.create(
+                                requireContext(),
+                                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
+                        if (mp != null) mp.start();
+                    } catch (Exception ignored) {}
+                }
+            }.start();
+        }
     }
 
     private void pauseTimer() {
         if (countDownTimer != null) {
             countDownTimer.cancel();
         }
-        isRunning = false;
-        btnStart.setText("继续");
-        btnReset.setEnabled(true);
+        isPaused = true;
+        isRunning = true;
+        btnStart.setIconResource(R.drawable.ic_play_triangle);
+        btnStop.setEnabled(true);
     }
 
     private void stopTimer() {
@@ -186,9 +281,10 @@ public class TimerFragment extends Fragment {
             countDownTimer.cancel();
         }
         isRunning = false;
+        isPaused = false;
         totalSeconds = 0;
-        btnStart.setText("开始");
-        btnReset.setEnabled(false);
+        btnStart.setIconResource(R.drawable.ic_play_triangle);
+        btnStop.setEnabled(false);
         updateDisplay();
     }
 

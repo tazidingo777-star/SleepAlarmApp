@@ -61,14 +61,14 @@ public class StopwatchFragment extends Fragment {
                 running = true;
                 startTime = System.currentTimeMillis() - elapsedTime;
                 handler.post(updateRunnable);
-                btnStart.setText("暂停");
+                btnStart.setIconResource(R.drawable.ic_pause);
                 btnLap.setEnabled(true);
                 btnReset.setEnabled(false);
             } else {
                 running = false;
                 handler.removeCallbacks(updateRunnable);
                 elapsedTime = System.currentTimeMillis() - startTime;
-                btnStart.setText("继续");
+                btnStart.setIconResource(R.drawable.ic_play_triangle);
                 btnLap.setEnabled(false);
                 btnReset.setEnabled(true);
             }
@@ -76,7 +76,7 @@ public class StopwatchFragment extends Fragment {
 
         btnLap.setOnClickListener(view -> {
             long lapTime = System.currentTimeMillis() - startTime;
-            laps.add(0, lapTime); // newest first
+            laps.add(0, lapTime);
             updateLapsDisplay();
         });
 
@@ -86,7 +86,7 @@ public class StopwatchFragment extends Fragment {
             elapsedTime = 0;
             startTime = 0;
             laps.clear();
-            btnStart.setText("开始");
+            btnStart.setIconResource(R.drawable.ic_play_triangle);
             btnLap.setEnabled(false);
             btnReset.setEnabled(false);
             updateDisplay();

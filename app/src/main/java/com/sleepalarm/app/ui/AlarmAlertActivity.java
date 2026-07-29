@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -29,7 +30,6 @@ import com.sleepalarm.app.utils.PreferencesHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
 
@@ -37,6 +37,8 @@ import java.util.Random;
  * 闹钟响铃全屏界面 - 滑动关闭 + 按钮关闭 + 起床语音播报
  */
 public class AlarmAlertActivity extends AppCompatActivity {
+
+    private static final String TAG = "AlarmAlertActivity";
 
     private TextView tvAlarmTitle;
     private TextView tvAlarmTime;
@@ -48,6 +50,7 @@ public class AlarmAlertActivity extends AppCompatActivity {
     private AlarmService alarmService;
     private boolean isBedtime;
     private boolean isBound = false;
+    private boolean alarmDismissed = false;
 
     // 滑动关闭
     private float slideStartX;
@@ -78,6 +81,11 @@ public class AlarmAlertActivity extends AppCompatActivity {
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.d(TAG, "onServiceConnected");
+            if (alarmDismissed) {
+                try { AlarmAlertActivity.this.unbindService(this); } catch (Exception ignored) {}
+                return;
+            }
             AlarmService.LocalBinder binder = (AlarmService.LocalBinder) service;
             alarmService = binder.getService();
             isBound = true;
@@ -85,6 +93,7 @@ public class AlarmAlertActivity extends AppCompatActivity {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            Log.d(TAG, "onServiceDisconnected");
             isBound = false;
             alarmService = null;
         }
@@ -111,8 +120,8 @@ public class AlarmAlertActivity extends AppCompatActivity {
                 : intent.getIntExtra(AlarmManagerHelper.EXTRA_WAKE_MINUTE, 0);
 
         initViews(hour, minute);
-        setupSlideToDismiss();
         setupListeners();
+        setupSlideToDismiss();
 
         // 绑定服务
         bindService(new Intent(this, AlarmService.class), serviceConnection, Context.BIND_AUTO_CREATE);
@@ -146,93 +155,65 @@ public class AlarmAlertActivity extends AppCompatActivity {
     }
 
     /**
-     * 设置滑动关闭手势
+     * 设置滑动关闭手势 - 直接在 slideContainer 上追踪整个滑动区域
      */
     private void setupSlideToDismiss() {
         if (isBedtime) return;
 
-        slideThumb.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        slideStartX = event.getRawX();
-                        thumbStartX = v.getX();
-                        maxSlideDistance = slideTrackBg.getWidth() - v.getWidth();
-                        isSliding = true;
-                        v.setPressed(true);
-                        return true;
-
-                    case MotionEvent.ACTION_MOVE:
-                        if (!isSliding) return true;
-                        float deltaX = event.getRawX() - slideStartX;
-                        float newX = thumbStartX + deltaX;
-                        // 限制在轨道范围内
-                        newX = Math.max(0, Math.min(newX, maxSlideDistance));
-                        v.setX(newX);
-
-                        // 更新提示文字透明度
-                        float progress = newX / maxSlideDistance;
-                        tvSlideHint.setAlpha(1f - progress);
-
-                        // 滑动超过80%自动完成
-                        if (progress >= 0.8f && !slideCompleted) {
-                            slideCompleted = true;
-                            animateSlideComplete(v);
-                        }
-                        return true;
-
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_CANCEL:
-                        if (!isSliding) return true;
-                        isSliding = false;
-                        v.setPressed(false);
-
-                        if (!slideCompleted) {
-                            // 回弹动画
-                            animateSlideBack(v);
-                        }
-                        return true;
-                }
-                return false;
-            }
+        // 等待布局完成后再获取正确的宽度
+        slideContainer.post(() -> {
+            maxSlideDistance = slideTrackBg.getWidth() - slideThumb.getWidth();
+            Log.d(TAG, "maxSlideDistance = " + maxSlideDistance);
         });
 
-        // 也支持在轨道背景上滑动
-        slideTrackBg.setOnTouchListener(new View.OnTouchListener() {
+        slideContainer.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                // 如果 maxSlideDistance 还没计算好，用默认值
+                if (maxSlideDistance <= 0) {
+                    maxSlideDistance = slideTrackBg.getWidth() - slideThumb.getWidth();
+                }
+
                 switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        slideStartX = event.getRawX();
-                        thumbStartX = slideThumb.getX();
-                        maxSlideDistance = slideTrackBg.getWidth() - slideThumb.getWidth();
-                        isSliding = true;
-                        return true;
+                    case MotionEvent.ACTION_DOWN: {
+                        // 检查触摸点是否在轨道区域内
+                        float touchY = event.getY();
+                        float trackTop = slideTrackBg.getTop();
+                        float trackBottom = slideTrackBg.getBottom();
+                        if (touchY >= trackTop && touchY <= trackBottom) {
+                            slideStartX = event.getRawX();
+                            thumbStartX = slideThumb.getTranslationX();
+                            isSliding = true;
+                            slideThumb.setPressed(true);
+                            return true;
+                        }
+                        return false;
+                    }
 
                     case MotionEvent.ACTION_MOVE:
-                        if (!isSliding) return true;
+                        if (!isSliding) return false;
                         float deltaX = event.getRawX() - slideStartX;
                         float newX = thumbStartX + deltaX;
                         newX = Math.max(0, Math.min(newX, maxSlideDistance));
-                        slideThumb.setX(newX);
+                        slideThumb.setTranslationX(newX);
 
                         float progress = newX / maxSlideDistance;
                         tvSlideHint.setAlpha(1f - progress);
 
                         if (progress >= 0.8f && !slideCompleted) {
                             slideCompleted = true;
-                            animateSlideComplete(slideThumb);
+                            animateSlideComplete();
                         }
                         return true;
 
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_CANCEL:
-                        if (!isSliding) return true;
+                        if (!isSliding) return false;
                         isSliding = false;
+                        slideThumb.setPressed(false);
 
                         if (!slideCompleted) {
-                            animateSlideBack(slideThumb);
+                            animateSlideBack();
                         }
                         return true;
                 }
@@ -244,18 +225,16 @@ public class AlarmAlertActivity extends AppCompatActivity {
     /**
      * 滑动完成动画
      */
-    private void animateSlideComplete(final View thumb) {
-        float targetX = maxSlideDistance;
-        ValueAnimator animator = ValueAnimator.ofFloat(thumb.getX(), targetX);
+    private void animateSlideComplete() {
+        ValueAnimator animator = ValueAnimator.ofFloat(slideThumb.getTranslationX(), maxSlideDistance);
         animator.setDuration(200);
         animator.setInterpolator(new android.view.animation.DecelerateInterpolator());
         animator.addUpdateListener(animation -> {
-            thumb.setX((Float) animation.getAnimatedValue());
+            slideThumb.setTranslationX((Float) animation.getAnimatedValue());
         });
         animator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                // 延迟一下让用户看到完成状态
                 handler.postDelayed(() -> dismissAlarm(), 300);
             }
         });
@@ -265,13 +244,18 @@ public class AlarmAlertActivity extends AppCompatActivity {
     /**
      * 滑动回弹动画
      */
-    private void animateSlideBack(final View thumb) {
-        ValueAnimator animator = ValueAnimator.ofFloat(thumb.getX(), 0f);
+    private void animateSlideBack() {
+        ValueAnimator animator = ValueAnimator.ofFloat(slideThumb.getTranslationX(), 0f);
         animator.setDuration(300);
         animator.setInterpolator(new android.view.animation.DecelerateInterpolator());
         animator.addUpdateListener(animation -> {
-            thumb.setX((Float) animation.getAnimatedValue());
-            tvSlideHint.setAlpha(0.8f);
+            slideThumb.setTranslationX((Float) animation.getAnimatedValue());
+        });
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                tvSlideHint.setAlpha(0.8f);
+            }
         });
         animator.start();
     }
@@ -288,7 +272,6 @@ public class AlarmAlertActivity extends AppCompatActivity {
                     ttsInitialized = false;
                     return;
                 }
-                // TTS初始化成功后，延迟播报
                 handler.postDelayed(this::speakBriefing, 1500);
             }
         });
@@ -298,9 +281,7 @@ public class AlarmAlertActivity extends AppCompatActivity {
             public void onStart(String utteranceId) {}
 
             @Override
-            public void onDone(String utteranceId) {
-                // 播报完成
-            }
+            public void onDone(String utteranceId) {}
 
             @Override
             public void onError(String utteranceId) {}
@@ -316,10 +297,8 @@ public class AlarmAlertActivity extends AppCompatActivity {
         Calendar calendar = Calendar.getInstance();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
 
-        // 构建播报文本
         StringBuilder briefing = new StringBuilder();
 
-        // 问候语
         String greeting;
         if (hour < 6) greeting = "凌晨好";
         else if (hour < 9) greeting = "早上好";
@@ -329,14 +308,12 @@ public class AlarmAlertActivity extends AppCompatActivity {
         else greeting = "晚上好";
         briefing.append(greeting).append("。");
 
-        // 日期信息
         SimpleDateFormat dateFormat = new SimpleDateFormat("M月d日", Locale.CHINESE);
         String[] weekDays = {"星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"};
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
         briefing.append("今天是").append(dateFormat.format(calendar.getTime())).append("，");
         briefing.append(weekDays[dayOfWeek]).append("。");
 
-        // 睡眠信息
         PreferencesHelper prefsHelper = new PreferencesHelper(this);
         SleepSchedule schedule = prefsHelper.getActiveSchedule();
         if (schedule != null) {
@@ -344,7 +321,6 @@ public class AlarmAlertActivity extends AppCompatActivity {
             briefing.append("计划睡眠时长").append(schedule.getSleepDurationText()).append("。");
         }
 
-        // 天气模拟信息
         Random random = new Random();
         int temp = 22 + random.nextInt(15);
         String[] conditions = {"晴", "多云", "阴", "晴间多云", "微风"};
@@ -352,11 +328,9 @@ public class AlarmAlertActivity extends AppCompatActivity {
         briefing.append("今日天气").append(condition).append("，");
         briefing.append("气温").append(temp).append("度。");
 
-        // 语录
         String quote = QUOTES[random.nextInt(QUOTES.length)];
         briefing.append(quote);
 
-        // 使用 TTS 播报
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             tts.speak(briefing.toString(), TextToSpeech.QUEUE_FLUSH, null, "briefing_utterance");
         } else {
@@ -365,8 +339,15 @@ public class AlarmAlertActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        // 关闭闹钟按钮
-        findViewById(R.id.btn_dismiss).setOnClickListener(v -> dismissAlarm());
+        // 关闭闹钟按钮 - 始终可见
+        View btnDismiss = findViewById(R.id.btn_dismiss);
+        btnDismiss.setOnClickListener(v -> {
+            Log.d(TAG, "btn_dismiss clicked");
+            dismissAlarm();
+        });
+        // 确保可点击
+        btnDismiss.setClickable(true);
+        btnDismiss.setFocusable(true);
 
         // 稍后提醒按钮（仅起床闹钟有）
         View btnSnooze = findViewById(R.id.btn_snooze);
@@ -388,25 +369,41 @@ public class AlarmAlertActivity extends AppCompatActivity {
         } else if (btnBriefing != null) {
             btnBriefing.setVisibility(View.GONE);
         }
+
+        // 就寝闹钟也显示关闭按钮（在滑动区域位置）
+        if (isBedtime && slideContainer != null) {
+            // 就寝时没有滑动条，但关闭按钮在按钮区已经可见
+        }
     }
 
     /**
-     * 关闭闹钟 - 停止服务和声音
+     * 关闭闹钟 - 核心方法：解绑服务 → 停止服务 → 关闭页面
      */
     private void dismissAlarm() {
+        if (alarmDismissed) return;
+        alarmDismissed = true;
+        Log.d(TAG, "dismissAlarm");
+
         // 停止TTS
         stopTTS();
 
-        // 通过绑定停止闹钟
+        // 停止闹钟声音
         if (isBound && alarmService != null) {
             alarmService.stopAlarm();
-            unbindService(serviceConnection);
-            isBound = false;
         }
 
-        // 直接停止服务（确保即使绑定未完成也能停止）
+        // 解绑服务（无论如何都要尝试）
+        try {
+            unbindService(serviceConnection);
+        } catch (Exception e) {
+            Log.w(TAG, "unbindService failed: " + e.getMessage());
+        }
+        isBound = false;
+
+        // 直接停止前台服务
         Intent serviceIntent = new Intent(this, AlarmService.class);
         stopService(serviceIntent);
+        AlarmService.isRinging = false;
 
         finish();
     }
@@ -415,8 +412,19 @@ public class AlarmAlertActivity extends AppCompatActivity {
      * 稍后提醒 - 10分钟后再次响铃
      */
     private void snoozeAlarm() {
+        if (alarmDismissed) return;
+        alarmDismissed = true;
         stopTTS();
-        stopAlarmService();
+
+        // 解绑并停止服务
+        try {
+            unbindService(serviceConnection);
+        } catch (Exception ignored) {}
+        isBound = false;
+
+        Intent serviceIntent = new Intent(this, AlarmService.class);
+        stopService(serviceIntent);
+        AlarmService.isRinging = false;
 
         // 设置10分钟后的临时闹钟
         Calendar calendar = Calendar.getInstance();
@@ -426,19 +434,6 @@ public class AlarmAlertActivity extends AppCompatActivity {
 
         AlarmManagerHelper.setSnoozeAlarm(this, snoozeHour, snoozeMinute);
         finish();
-    }
-
-    /**
-     * 停止闹钟服务
-     */
-    private void stopAlarmService() {
-        if (isBound && alarmService != null) {
-            alarmService.stopAlarm();
-            unbindService(serviceConnection);
-            isBound = false;
-        }
-        Intent serviceIntent = new Intent(this, AlarmService.class);
-        stopService(serviceIntent);
     }
 
     /**
@@ -455,16 +450,17 @@ public class AlarmAlertActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (isBound) {
+        Log.d(TAG, "onDestroy");
+        try {
             unbindService(serviceConnection);
-            isBound = false;
-        }
+        } catch (Exception ignored) {}
+        isBound = false;
         stopTTS();
         handler.removeCallbacksAndMessages(null);
     }
 
     @Override
     public void onBackPressed() {
-        // 禁止返回键关闭闹钟，必须滑动或点击关闭按钮
+        // 禁止返回键关闭闹钟
     }
 }

@@ -37,9 +37,9 @@ public class CircleClockView extends View {
     private float tickOuterRadius;  // 刻度外半径
     private float tickInnerRadius;  // 刻度内半径
 
-    private float arcWidth = 42f;   // 橙色弧线宽度（粗）
-    private float dotRadius = 22f;  // 圆点半径
-    private float dotBorderWidth = 3f;
+    private float arcWidth = 63f;   // 橙色弧线宽度（1.5倍）
+    private float dotRadius = 33f;  // 圆点半径（1.5倍）
+    private float dotBorderWidth = 4.5f; // 1.5倍
     private float tickLength = 12f;
 
     // 时间状态（24小时制）
@@ -119,20 +119,20 @@ public class CircleClockView extends View {
         // 图标（用字符绘制）
         iconPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         iconPaint.setColor(colorDotIcon);
-        iconPaint.setTextSize(20f);
+        iconPaint.setTextSize(28f);
         iconPaint.setTextAlign(Paint.Align.CENTER);
 
-        // 中心小时
+        // 中心小时（2倍大小）
         centerHourPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         centerHourPaint.setColor(colorCenterHour);
-        centerHourPaint.setTextSize(64f);
+        centerHourPaint.setTextSize(128f);
         centerHourPaint.setTextAlign(Paint.Align.CENTER);
         centerHourPaint.setTypeface(Typeface.DEFAULT_BOLD);
 
-        // 中心单位
+        // 中心单位（2倍大小）
         centerUnitPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         centerUnitPaint.setColor(colorCenterUnit);
-        centerUnitPaint.setTextSize(24f);
+        centerUnitPaint.setTextSize(48f);
         centerUnitPaint.setTextAlign(Paint.Align.CENTER);
 
         // 睡眠背景（刻度盘浅灰圆）
@@ -218,7 +218,7 @@ public class CircleClockView extends View {
         // 橙色描边
         canvas.drawCircle(x, y, dotRadius, dotBorderPaint);
         // 图标
-        canvas.drawText(icon, x, y + 7, iconPaint);
+        canvas.drawText(icon, x, y + 10, iconPaint);
     }
 
     private void drawCenterText(Canvas canvas) {
@@ -230,8 +230,8 @@ public class CircleClockView extends View {
         String unitText = (minutes > 0) ? "小时" + minutes + "分" : "小时";
 
         float cy = centerY;
-        canvas.drawText(hourText, centerX - 20, cy + 20, centerHourPaint);
-        canvas.drawText(unitText, centerX + 35, cy + 16, centerUnitPaint);
+        canvas.drawText(hourText, centerX - 35, cy + 40, centerHourPaint);
+        canvas.drawText(unitText, centerX + 60, cy + 30, centerUnitPaint);
     }
 
     // ===== 时间/角度转换 =====

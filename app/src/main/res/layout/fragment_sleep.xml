@@ -73,7 +73,10 @@
                 android:text="23:00"
                 android:textSize="40sp"
                 android:textColor="#FFFFFFFF"
-                android:fontFamily="sans-serif-thin" />
+                android:fontFamily="sans-serif-thin"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground" />
         </LinearLayout>
 
         <LinearLayout
@@ -98,7 +101,10 @@
                 android:text="06:00"
                 android:textSize="40sp"
                 android:textColor="#FFFFFFFF"
-                android:fontFamily="sans-serif-thin" />
+                android:fontFamily="sans-serif-thin"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground" />
         </LinearLayout>
     </LinearLayout>
 

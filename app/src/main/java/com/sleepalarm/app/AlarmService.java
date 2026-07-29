@@ -37,6 +37,9 @@ public class AlarmService extends Service {
     private static final String CHANNEL_ID = "alarm_channel";
     private static final int NOTIFICATION_ID = 1001;
 
+    /** 静态标志：闹钟是否正在响铃。MainActivity 用此判断是否需要跳转到关闭界面 */
+    public static volatile boolean isRinging = false;
+
     private MediaPlayer mediaPlayer;
     private AudioManager audioManager;
     private Vibrator vibrator;
@@ -72,6 +75,9 @@ public class AlarmService extends Service {
 
         // 启动前台服务通知
         startForeground(NOTIFICATION_ID, buildNotification());
+
+        // 标记闹钟正在响铃
+        isRinging = true;
 
         // 启动渐响闹钟
         startGradualAlarm(intent);
@@ -304,6 +310,7 @@ public class AlarmService extends Service {
 
     @Override
     public void onDestroy() {
+        isRinging = false;
         stopAlarm();
         super.onDestroy();
     }

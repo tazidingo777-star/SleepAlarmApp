@@ -5,23 +5,42 @@
     android:layout_height="match_parent"
     android:background="@color/background">
 
+    <!-- 空状态提示 -->
+    <LinearLayout
+        android:id="@+id/layout_empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="visible">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="还没有闹钟"
+            android:textSize="18sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="24dp" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_add_alarm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="添加闹钟"
+            android:src="@android:drawable/ic_input_add"
+            android:scaleX="1.5"
+            android:scaleY="1.5"
+            app:backgroundTint="#FF9500"
+            app:tint="#000000"
+            app:fabSize="normal" />
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_alarms"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:paddingBottom="80dp" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_add_alarm"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom"
-        android:layout_margin="24dp"
-        android:contentDescription="添加闹钟"
-        android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="#FF9500"
-        app:tint="#000000"
-        app:fabSize="normal" />
+        android:paddingBottom="80dp"
+        android:visibility="gone" />
 
 </FrameLayout>

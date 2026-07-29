@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.sleepalarm.app.ui.AlarmsFragment;
+import com.sleepalarm.app.ui.AlarmAlertActivity;
 import com.sleepalarm.app.ui.SleepScheduleFragment;
 import com.sleepalarm.app.ui.StopwatchFragment;
 import com.sleepalarm.app.ui.TimerFragment;
@@ -84,6 +85,28 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             AlarmManagerHelper.setAllAlarms(this);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 如果闹钟正在响铃，直接跳转到闹钟关闭界面
+        if (AlarmService.isRinging) {
+            Intent alertIntent = new Intent(this, AlarmAlertActivity.class);
+            alertIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(alertIntent);
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // 当从通知栏点击进入时也检查闹钟状态
+        if (AlarmService.isRinging) {
+            Intent alertIntent = new Intent(this, AlarmAlertActivity.class);
+            alertIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(alertIntent);
         }
     }
 }
