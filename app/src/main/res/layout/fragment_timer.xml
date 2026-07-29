@@ -8,9 +8,9 @@
     android:gravity="center_horizontal"
     android:padding="16dp">
 
-    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.06" />
+    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.04" />
 
-    <!-- 倒计时大显示（运行时显示） -->
+    <!-- 运行时倒计时大显示 -->
     <TextView
         android:id="@+id/tv_timer_display"
         android:layout_width="wrap_content"
@@ -22,95 +22,114 @@
         android:textStyle="bold"
         android:visibility="gone" />
 
-    <!-- HH:MM:SS 数字显示 -->
+    <!-- 轮盘选择区（非运行时显示） -->
     <LinearLayout
+        android:id="@+id/layout_wheels"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center">
+        android:gravity="center"
+        android:layout_marginTop="24dp"
+        android:visibility="visible">
 
-        <TextView
-            android:id="@+id/tv_hours"
+        <LinearLayout
             android:layout_width="80dp"
             android:layout_height="wrap_content"
-            android:text="00"
-            android:textSize="64sp"
-            android:textColor="@color/text_primary"
-            android:fontFamily="sans-serif-thin"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackground" />
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tv_hours"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="00"
+                android:textSize="28sp"
+                android:textColor="@color/text_primary"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                android:padding="4dp" />
+
+            <NumberPicker
+                android:id="@+id/np_hours"
+                android:layout_width="80dp"
+                android:layout_height="140dp"
+                android:theme="@style/NPTheme" />
+        </LinearLayout>
 
         <TextView
-            android:layout_width="24dp"
+            android:layout_width="20dp"
             android:layout_height="wrap_content"
             android:text=":"
-            android:textSize="56sp"
+            android:textSize="36sp"
             android:textColor="@color/primary"
-            android:fontFamily="sans-serif-thin"
-            android:gravity="center" />
+            android:gravity="center"
+            android:layout_marginBottom="30dp" />
 
-        <TextView
-            android:id="@+id/tv_minutes"
+        <LinearLayout
             android:layout_width="80dp"
             android:layout_height="wrap_content"
-            android:text="00"
-            android:textSize="64sp"
-            android:textColor="@color/text_primary"
-            android:fontFamily="sans-serif-thin"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackground" />
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tv_minutes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="00"
+                android:textSize="28sp"
+                android:textColor="@color/text_primary"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                android:padding="4dp" />
+
+            <NumberPicker
+                android:id="@+id/np_minutes"
+                android:layout_width="80dp"
+                android:layout_height="140dp"
+                android:theme="@style/NPTheme" />
+        </LinearLayout>
 
         <TextView
-            android:layout_width="24dp"
+            android:layout_width="20dp"
             android:layout_height="wrap_content"
             android:text=":"
-            android:textSize="56sp"
+            android:textSize="36sp"
             android:textColor="@color/primary"
-            android:fontFamily="sans-serif-thin"
-            android:gravity="center" />
+            android:gravity="center"
+            android:layout_marginBottom="30dp" />
 
-        <TextView
-            android:id="@+id/tv_seconds"
+        <LinearLayout
             android:layout_width="80dp"
             android:layout_height="wrap_content"
-            android:text="00"
-            android:textSize="64sp"
-            android:textColor="@color/text_primary"
-            android:fontFamily="sans-serif-thin"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackground" />
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tv_seconds"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="00"
+                android:textSize="28sp"
+                android:textColor="@color/text_primary"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                android:padding="4dp" />
+
+            <NumberPicker
+                android:id="@+id/np_seconds"
+                android:layout_width="80dp"
+                android:layout_height="140dp"
+                android:theme="@style/NPTheme" />
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- 时/分/秒 标签 -->
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="8dp">
-
-        <TextView android:layout_width="80dp" android:layout_height="wrap_content"
-            android:text="时" android:textSize="14sp" android:textColor="@color/text_secondary"
-            android:gravity="center" />
-        <View android:layout_width="24dp" android:layout_height="1dp" />
-        <TextView android:layout_width="80dp" android:layout_height="wrap_content"
-            android:text="分" android:textSize="14sp" android:textColor="@color/text_secondary"
-            android:gravity="center" />
-        <View android:layout_width="24dp" android:layout_height="1dp" />
-        <TextView android:layout_width="80dp" android:layout_height="wrap_content"
-            android:text="秒" android:textSize="14sp" android:textColor="@color/text_secondary"
-            android:gravity="center" />
-    </LinearLayout>
-
-    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.06" />
+    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.05" />
 
     <!-- 操作按钮 -->
     <LinearLayout
@@ -119,7 +138,6 @@
         android:orientation="horizontal"
         android:gravity="center">
 
-        <!-- 停止按钮 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_timer_stop"
             style="@style/Widget.Material3.Button.OutlinedButton"
@@ -132,12 +150,11 @@
             android:padding="0dp"
             app:icon="@drawable/ic_stop_square"
             app:iconSize="28dp"
-            app:iconGravity="textStart"
+            app:iconGravity="textTop"
             app:cornerRadius="38dp"
             app:strokeColor="@color/gray_light"
             android:layout_marginEnd="20dp" />
 
-        <!-- 开始/暂停按钮 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_timer_start"
             android:layout_width="80dp"
@@ -149,11 +166,11 @@
             android:padding="0dp"
             app:icon="@drawable/ic_play_triangle"
             app:iconSize="32dp"
-            app:iconGravity="textStart"
+            app:iconGravity="textTop"
             app:cornerRadius="40dp"
             app:backgroundTint="@color/primary"
             style="@style/Widget.Material3.Button" />
     </LinearLayout>
 
-    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.08" />
+    <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.06" />
 </LinearLayout>

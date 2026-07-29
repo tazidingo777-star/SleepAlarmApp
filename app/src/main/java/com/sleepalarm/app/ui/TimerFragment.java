@@ -5,9 +5,12 @@ import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.text.InputType;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
@@ -26,6 +29,8 @@ import java.util.Locale;
 public class TimerFragment extends Fragment {
 
     private TextView tvTimerDisplay, tvHours, tvMinutes, tvSeconds;
+    private NumberPicker npHours, npMinutes, npSeconds;
+    private View layoutWheels;
     private MaterialButton btnStart, btnStop;
 
     private long totalSeconds = 0;
@@ -40,36 +45,51 @@ public class TimerFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_timer, container, false);
 
         tvTimerDisplay = v.findViewById(R.id.tv_timer_display);
+        layoutWheels = v.findViewById(R.id.layout_wheels);
         tvHours = v.findViewById(R.id.tv_hours);
         tvMinutes = v.findViewById(R.id.tv_minutes);
         tvSeconds = v.findViewById(R.id.tv_seconds);
+        npHours = v.findViewById(R.id.np_hours);
+        npMinutes = v.findViewById(R.id.np_minutes);
+        npSeconds = v.findViewById(R.id.np_seconds);
         btnStart = v.findViewById(R.id.btn_timer_start);
         btnStop = v.findViewById(R.id.btn_timer_stop);
 
         btnStop.setEnabled(false);
 
-        // Click time texts to edit via wheel picker
+        // 设置轮盘
+        setupNumberPicker(npHours, 0, 23, 0);
+        setupNumberPicker(npMinutes, 0, 59, 0);
+        setupNumberPicker(npSeconds, 0, 59, 0);
+
+        // 点击文字 → 输入数字（弹出输入框）
         tvHours.setOnClickListener(view -> {
             if (isRunning) return;
-            showNumberPicker("设置小时", 0, 23, getHours(), val -> {
-                setHours(val);
-                updateDisplay();
+            showNumberInput("输入小时", 0, 23, getHours(), val -> {
+                npHours.setValue(val);
+                updateFromWheels();
             });
         });
         tvMinutes.setOnClickListener(view -> {
             if (isRunning) return;
-            showNumberPicker("设置分钟", 0, 59, getMinutes(), val -> {
-                setMinutes(val);
-                updateDisplay();
+            showNumberInput("输入分钟", 0, 59, getMinutes(), val -> {
+                npMinutes.setValue(val);
+                updateFromWheels();
             });
         });
         tvSeconds.setOnClickListener(view -> {
             if (isRunning) return;
-            showNumberPicker("设置秒", 0, 59, getSeconds(), val -> {
-                setSeconds(val);
-                updateDisplay();
+            showNumberInput("输入秒", 0, 59, getSeconds(), val -> {
+                npSeconds.setValue(val);
+                updateFromWheels();
             });
         });
+
+        // 轮盘变化监听
+        NumberPicker.OnValueChangeListener wheelListener = (picker, oldVal, newVal) -> updateFromWheels();
+        npHours.setOnValueChangedListener(wheelListener);
+        npMinutes.setOnValueChangedListener(wheelListener);
+        npSeconds.setOnValueChangedListener(wheelListener);
 
         btnStart.setOnClickListener(view -> {
             if (isRunning && !isPaused) {
@@ -79,93 +99,83 @@ public class TimerFragment extends Fragment {
             }
         });
 
-        btnStop.setOnClickListener(view -> {
-            stopTimer();
-        });
+        btnStop.setOnClickListener(view -> stopTimer());
 
-        updateDisplay();
+        updateFromWheels();
         return v;
     }
 
-    private int getHours() {
-        return (int) (totalSeconds / 3600);
+    private void setupNumberPicker(NumberPicker picker, int min, int max, int value) {
+        picker.setMinValue(min);
+        picker.setMaxValue(max);
+        picker.setValue(value);
+        picker.setFormatter(i -> String.format("%02d", i));
+        picker.setTextColor(Color.WHITE);
+        ViewUtils.setNumberPickerDividerColor(picker, Color.parseColor("#FF9500"));
     }
 
-    private int getMinutes() {
-        return (int) ((totalSeconds % 3600) / 60);
-    }
-
-    private int getSeconds() {
-        return (int) (totalSeconds % 60);
-    }
-
-    private void setHours(int h) {
-        int m = getMinutes();
-        int s = getSeconds();
-        totalSeconds = h * 3600L + m * 60L + s;
+    private void updateFromWheels() {
+        totalSeconds = npHours.getValue() * 3600L + npMinutes.getValue() * 60L + npSeconds.getValue();
         updateDisplay();
     }
 
-    private void setMinutes(int m) {
-        int h = getHours();
-        int s = getSeconds();
-        totalSeconds = h * 3600L + m * 60L + s;
-        updateDisplay();
-    }
-
-    private void setSeconds(int s) {
-        int h = getHours();
-        int m = getMinutes();
-        totalSeconds = h * 3600L + m * 60L + s;
-        updateDisplay();
-    }
-
-    private void showNumberPicker(String title, int min, int max, int initial, ValueCallback callback) {
+    /**
+     * 弹出数字输入框（替代轮盘）
+     */
+    private void showNumberInput(String title, int min, int max, int initial, ValueCallback callback) {
         Dialog dialog = new Dialog(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_NoActionBar);
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
         LinearLayout root = new LinearLayout(requireContext());
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(40, 28, 40, 28);
+        root.setPadding(48, 32, 48, 32);
         root.setBackgroundColor(0xFF1C1C1E);
-        root.setGravity(android.view.Gravity.CENTER_HORIZONTAL);
+        root.setGravity(Gravity.CENTER_HORIZONTAL);
 
         TextView tvTitle = new TextView(requireContext());
         tvTitle.setText(title);
-        tvTitle.setTextSize(17);
+        tvTitle.setTextSize(16);
         tvTitle.setTextColor(Color.parseColor("#8E8E93"));
         tvTitle.setPadding(0, 0, 0, 16);
         root.addView(tvTitle);
 
-        NumberPicker picker = new NumberPicker(requireContext());
-        picker.setMinValue(min);
-        picker.setMaxValue(max);
-        picker.setValue(initial);
-        picker.setFormatter(i -> String.format("%02d", i));
-        picker.setTextColor(Color.WHITE);
-        ViewUtils.setNumberPickerDividerColor(picker, Color.parseColor("#FF9500"));
-        root.addView(picker);
+        EditText etInput = new EditText(requireContext());
+        etInput.setText(String.format("%02d", initial));
+        etInput.setTextSize(40);
+        etInput.setTextColor(Color.WHITE);
+        etInput.setGravity(Gravity.CENTER);
+        etInput.setInputType(InputType.TYPE_CLASS_NUMBER);
+        etInput.setBackgroundColor(0xFF2C2C2E);
+        etInput.setPadding(32, 20, 32, 20);
+        etInput.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        root.addView(etInput);
 
         LinearLayout btnRow = new LinearLayout(requireContext());
         btnRow.setOrientation(LinearLayout.HORIZONTAL);
-        btnRow.setGravity(android.view.Gravity.CENTER);
+        btnRow.setGravity(Gravity.CENTER);
         btnRow.setPadding(0, 20, 0, 0);
 
         TextView btnCancel = new TextView(requireContext());
         btnCancel.setText("取消");
         btnCancel.setTextSize(16);
         btnCancel.setTextColor(Color.parseColor("#8E8E93"));
-        btnCancel.setPadding(40, 12, 40, 12);
+        btnCancel.setPadding(48, 12, 48, 12);
         btnCancel.setOnClickListener(v -> dialog.dismiss());
 
         TextView btnOK = new TextView(requireContext());
         btnOK.setText("确定");
         btnOK.setTextSize(16);
         btnOK.setTextColor(Color.parseColor("#FF9500"));
-        btnOK.setPadding(40, 12, 40, 12);
+        btnOK.setPadding(48, 12, 48, 12);
         btnOK.setOnClickListener(v -> {
             dialog.dismiss();
-            callback.onValue(picker.getValue());
+            try {
+                int val = Integer.parseInt(etInput.getText().toString());
+                if (val >= min && val <= max) {
+                    callback.onValue(val);
+                }
+            } catch (NumberFormatException ignored) {}
         });
 
         btnRow.addView(btnCancel);
@@ -179,6 +189,10 @@ public class TimerFragment extends Fragment {
     private interface ValueCallback {
         void onValue(int value);
     }
+
+    private int getHours() { return (int) (totalSeconds / 3600); }
+    private int getMinutes() { return (int) ((totalSeconds % 3600) / 60); }
+    private int getSeconds() { return (int) (totalSeconds % 60); }
 
     private void updateDisplay() {
         int h = getHours();
@@ -196,14 +210,15 @@ public class TimerFragment extends Fragment {
             int rs = (int) (remain % 60);
             tvTimerDisplay.setText(String.format(Locale.getDefault(), "%02d:%02d:%02d", rh, rm, rs));
             tvTimerDisplay.setVisibility(View.VISIBLE);
+            layoutWheels.setVisibility(View.GONE);
         } else {
             tvTimerDisplay.setVisibility(View.GONE);
+            layoutWheels.setVisibility(View.VISIBLE);
         }
     }
 
     private void startTimer() {
         if (isPaused) {
-            // Resume
             isPaused = false;
             isRunning = true;
             btnStart.setIconResource(R.drawable.ic_pause);
@@ -215,7 +230,6 @@ public class TimerFragment extends Fragment {
                     totalSeconds = millisUntilFinished / 1000;
                     updateDisplay();
                 }
-
                 @Override
                 public void onFinish() {
                     totalSeconds = 0;
@@ -224,7 +238,6 @@ public class TimerFragment extends Fragment {
                     btnStart.setIconResource(R.drawable.ic_play_triangle);
                     btnStop.setEnabled(false);
                     updateDisplay();
-
                     try {
                         android.media.MediaPlayer mp = android.media.MediaPlayer.create(
                                 requireContext(),
@@ -234,7 +247,6 @@ public class TimerFragment extends Fragment {
                 }
             }.start();
         } else {
-            // Fresh start
             if (totalSeconds <= 0) return;
             isRunning = true;
             isPaused = false;
@@ -247,7 +259,6 @@ public class TimerFragment extends Fragment {
                     totalSeconds = millisUntilFinished / 1000;
                     updateDisplay();
                 }
-
                 @Override
                 public void onFinish() {
                     totalSeconds = 0;
@@ -256,7 +267,6 @@ public class TimerFragment extends Fragment {
                     btnStart.setIconResource(R.drawable.ic_play_triangle);
                     btnStop.setEnabled(false);
                     updateDisplay();
-
                     try {
                         android.media.MediaPlayer mp = android.media.MediaPlayer.create(
                                 requireContext(),
@@ -269,9 +279,7 @@ public class TimerFragment extends Fragment {
     }
 
     private void pauseTimer() {
-        if (countDownTimer != null) {
-            countDownTimer.cancel();
-        }
+        if (countDownTimer != null) countDownTimer.cancel();
         isPaused = true;
         isRunning = true;
         btnStart.setIconResource(R.drawable.ic_play_triangle);
@@ -279,12 +287,13 @@ public class TimerFragment extends Fragment {
     }
 
     private void stopTimer() {
-        if (countDownTimer != null) {
-            countDownTimer.cancel();
-        }
+        if (countDownTimer != null) countDownTimer.cancel();
         isRunning = false;
         isPaused = false;
         totalSeconds = 0;
+        npHours.setValue(0);
+        npMinutes.setValue(0);
+        npSeconds.setValue(0);
         btnStart.setIconResource(R.drawable.ic_play_triangle);
         btnStop.setEnabled(false);
         updateDisplay();
@@ -293,8 +302,6 @@ public class TimerFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (countDownTimer != null) {
-            countDownTimer.cancel();
-        }
+        if (countDownTimer != null) countDownTimer.cancel();
     }
 }

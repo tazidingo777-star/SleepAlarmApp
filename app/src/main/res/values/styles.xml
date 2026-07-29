@@ -4,4 +4,9 @@
         <item name="android:textSize">11sp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
+
+    <style name="NPTheme" parent="ThemeOverlay.Material3">
+        <item name="colorControlNormal">#FF9500</item>
+        <item name="colorControlActivated">#FF9500</item>
+    </style>
 </resources>

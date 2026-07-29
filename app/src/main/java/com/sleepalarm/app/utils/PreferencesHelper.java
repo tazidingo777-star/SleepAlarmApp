@@ -22,6 +22,8 @@ public class PreferencesHelper {
     private static final String KEY_ALARMS = "alarms";
     private static final String KEY_LAST_BRIEFING_DATE = "last_briefing_date";
     private static final String KEY_BRIEFING_ENABLED = "briefing_enabled";
+    private static final String KEY_DARK_THEME = "dark_theme";
+    private static final String KEY_LOCK_SCREEN_NOTIFY = "lock_screen_notify";
 
     private final SharedPreferences prefs;
 
@@ -137,6 +139,24 @@ public class PreferencesHelper {
 
     public void setLastBriefingDate(String date) {
         prefs.edit().putString(KEY_LAST_BRIEFING_DATE, date).apply();
+    }
+
+    // ==================== 主题与通知 ====================
+
+    public boolean isDarkTheme() {
+        return prefs.getBoolean(KEY_DARK_THEME, true);
+    }
+
+    public void setDarkTheme(boolean dark) {
+        prefs.edit().putBoolean(KEY_DARK_THEME, dark).apply();
+    }
+
+    public boolean isLockScreenNotifyEnabled() {
+        return prefs.getBoolean(KEY_LOCK_SCREEN_NOTIFY, true);
+    }
+
+    public void setLockScreenNotifyEnabled(boolean enabled) {
+        prefs.edit().putBoolean(KEY_LOCK_SCREEN_NOTIFY, enabled).apply();
     }
 
     // ==================== JSON 转换 ====================

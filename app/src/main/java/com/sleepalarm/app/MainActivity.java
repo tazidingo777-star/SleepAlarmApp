@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.widget.CompoundButton;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -16,19 +17,30 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.materialswitch.MaterialSwitch;
 import com.sleepalarm.app.ui.AlarmsFragment;
 import com.sleepalarm.app.ui.AlarmAlertActivity;
 import com.sleepalarm.app.ui.SleepScheduleFragment;
 import com.sleepalarm.app.ui.StopwatchFragment;
 import com.sleepalarm.app.ui.TimerFragment;
 import com.sleepalarm.app.utils.AlarmManagerHelper;
+import com.sleepalarm.app.utils.PreferencesHelper;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<String> notificationLauncher;
+    private PreferencesHelper prefsHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // 在 setContentView 前应用主题
+        prefsHelper = new PreferencesHelper(this);
+        if (prefsHelper.isDarkTheme()) {
+            setTheme(R.style.Theme_SleepAlarm);
+        } else {
+            setTheme(R.style.Theme_SleepAlarm_Light);
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -36,9 +48,23 @@ public class MainActivity extends AppCompatActivity {
                 new ActivityResultContracts.RequestPermission(),
                 granted -> { /* 权限结果处理 */ });
 
+        // 主题切换开关
+        MaterialSwitch switchTheme = findViewById(R.id.switch_theme);
+        switchTheme.setChecked(prefsHelper.isDarkTheme());
+        switchTheme.setOnCheckedChangeListener((btn, checked) -> {
+            prefsHelper.setDarkTheme(checked);
+            recreate();
+        });
+
+        // 锁屏通知开关
+        MaterialSwitch switchLockNotify = findViewById(R.id.switch_lock_notify);
+        switchLockNotify.setChecked(prefsHelper.isLockScreenNotifyEnabled());
+        switchLockNotify.setOnCheckedChangeListener((btn, checked) -> {
+            prefsHelper.setLockScreenNotifyEnabled(checked);
+        });
+
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
 
-        // 默认显示闹钟页
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new AlarmsFragment())
@@ -91,7 +117,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // 如果闹钟正在响铃，直接跳转到闹钟关闭界面
         if (AlarmService.isRinging) {
             Intent alertIntent = new Intent(this, AlarmAlertActivity.class);
             alertIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -102,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        // 当从通知栏点击进入时也检查闹钟状态
         if (AlarmService.isRinging) {
             Intent alertIntent = new Intent(this, AlarmAlertActivity.class);
             alertIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

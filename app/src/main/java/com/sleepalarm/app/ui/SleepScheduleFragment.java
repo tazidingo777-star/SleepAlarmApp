@@ -3,15 +3,19 @@ package com.sleepalarm.app.ui;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputType;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.NumberPicker;
+import android.widget.ScrollView;
 import android.widget.TextView;
-
-import com.sleepalarm.app.utils.ViewUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,12 +34,15 @@ import java.util.List;
  */
 public class SleepScheduleFragment extends Fragment {
 
+    private static final int RINGTONE_REQUEST = 2001;
+
     private CircleClockView circleClock;
     private MaterialSwitch switchEnabled;
     private TextView tvBedtime;
     private TextView tvWakeTime;
     private PreferencesHelper prefsHelper;
     private SleepSchedule schedule;
+    private Uri tempRingtoneUri;
 
     @Nullable
     @Override
@@ -49,6 +56,7 @@ public class SleepScheduleFragment extends Fragment {
         tvBedtime = v.findViewById(R.id.tv_bedtime);
         tvWakeTime = v.findViewById(R.id.tv_wake_time);
 
+        tempRingtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
         loadSchedule();
 
         circleClock.setOnTimeChangedListener((bh, bm, wh, wm) -> {
@@ -63,9 +71,9 @@ public class SleepScheduleFragment extends Fragment {
             }
         });
 
-        // Click bedtime time text to edit
+        // 就寝时间点击：弹出文字输入框
         tvBedtime.setOnClickListener(view -> {
-            showTimePicker("设置就寝时间", schedule.getBedtimeHour(), schedule.getBedtimeMinute(),
+            showTimeInputDialog("设置就寝时间", schedule.getBedtimeHour(), schedule.getBedtimeMinute(),
                     (h, m) -> {
                         schedule.setBedtimeHour(h);
                         schedule.setBedtimeMinute(m);
@@ -79,9 +87,9 @@ public class SleepScheduleFragment extends Fragment {
                     });
         });
 
-        // Click wake time text to edit
+        // 起床时间点击：弹出文字输入框
         tvWakeTime.setOnClickListener(view -> {
-            showTimePicker("设置起床时间", schedule.getWakeHour(), schedule.getWakeMinute(),
+            showTimeInputDialog("设置起床时间", schedule.getWakeHour(), schedule.getWakeMinute(),
                     (h, m) -> {
                         schedule.setWakeHour(h);
                         schedule.setWakeMinute(m);
@@ -112,9 +120,21 @@ public class SleepScheduleFragment extends Fragment {
         return v;
     }
 
-    private void showTimePicker(String title, int initHour, int initMinute, TimePickedCallback callback) {
+    /**
+     * 文字输入时间弹窗（替代轮盘）
+     */
+    private void showTimeInputDialog(String title, int initHour, int initMinute, TimePickedCallback callback) {
         Dialog dialog = new Dialog(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_NoActionBar);
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+        // 80% 宽度，顶部留边距
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = (int) (requireContext().getResources().getDisplayMetrics().widthPixels * 0.80);
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        lp.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
+        lp.y = (int) (requireContext().getResources().getDisplayMetrics().heightPixels * 0.08);
+        dialog.getWindow().setAttributes(lp);
 
         LinearLayout root = new LinearLayout(requireContext());
         root.setOrientation(LinearLayout.VERTICAL);
@@ -123,62 +143,75 @@ public class SleepScheduleFragment extends Fragment {
 
         TextView tvTitle = new TextView(requireContext());
         tvTitle.setText(title);
-        tvTitle.setTextSize(18);
+        tvTitle.setTextSize(20);
         tvTitle.setTextColor(Color.WHITE);
-        tvTitle.setPadding(0, 0, 0, 20);
+        tvTitle.setGravity(Gravity.CENTER);
+        tvTitle.setPadding(0, 0, 0, 24);
         root.addView(tvTitle);
 
-        LinearLayout pickerRow = new LinearLayout(requireContext());
-        pickerRow.setOrientation(LinearLayout.HORIZONTAL);
-        pickerRow.setGravity(android.view.Gravity.CENTER);
+        // 时:分 输入行
+        LinearLayout inputRow = new LinearLayout(requireContext());
+        inputRow.setOrientation(LinearLayout.HORIZONTAL);
+        inputRow.setGravity(Gravity.CENTER);
 
-        NumberPicker hourPicker = new NumberPicker(requireContext());
-        hourPicker.setMinValue(0);
-        hourPicker.setMaxValue(23);
-        hourPicker.setValue(initHour);
-        hourPicker.setFormatter(i -> String.format("%02d", i));
-        hourPicker.setTextColor(Color.WHITE);
-        ViewUtils.setNumberPickerDividerColor(hourPicker, Color.parseColor("#FF9500"));
+        EditText etHour = new EditText(requireContext());
+        etHour.setText(String.format("%02d", initHour));
+        etHour.setTextSize(36);
+        etHour.setTextColor(Color.WHITE);
+        etHour.setGravity(Gravity.CENTER);
+        etHour.setInputType(InputType.TYPE_CLASS_NUMBER);
+        etHour.setBackgroundColor(0xFF2C2C2E);
+        etHour.setPadding(24, 16, 24, 16);
+        etHour.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
 
         TextView sep = new TextView(requireContext());
         sep.setText(":");
-        sep.setTextSize(32);
+        sep.setTextSize(36);
         sep.setTextColor(Color.WHITE);
         sep.setPadding(16, 0, 16, 0);
 
-        NumberPicker minutePicker = new NumberPicker(requireContext());
-        minutePicker.setMinValue(0);
-        minutePicker.setMaxValue(59);
-        minutePicker.setValue(initMinute);
-        minutePicker.setFormatter(i -> String.format("%02d", i));
-        minutePicker.setTextColor(Color.WHITE);
-        ViewUtils.setNumberPickerDividerColor(minutePicker, Color.parseColor("#FF9500"));
+        EditText etMinute = new EditText(requireContext());
+        etMinute.setText(String.format("%02d", initMinute));
+        etMinute.setTextSize(36);
+        etMinute.setTextColor(Color.WHITE);
+        etMinute.setGravity(Gravity.CENTER);
+        etMinute.setInputType(InputType.TYPE_CLASS_NUMBER);
+        etMinute.setBackgroundColor(0xFF2C2C2E);
+        etMinute.setPadding(24, 16, 24, 16);
+        etMinute.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
 
-        pickerRow.addView(hourPicker);
-        pickerRow.addView(sep);
-        pickerRow.addView(minutePicker);
-        root.addView(pickerRow);
+        inputRow.addView(etHour);
+        inputRow.addView(sep);
+        inputRow.addView(etMinute);
+        root.addView(inputRow);
 
+        // 按钮
         LinearLayout btnRow = new LinearLayout(requireContext());
         btnRow.setOrientation(LinearLayout.HORIZONTAL);
-        btnRow.setGravity(android.view.Gravity.CENTER);
+        btnRow.setGravity(Gravity.CENTER);
         btnRow.setPadding(0, 24, 0, 0);
 
         TextView btnCancel = new TextView(requireContext());
         btnCancel.setText("取消");
         btnCancel.setTextSize(16);
         btnCancel.setTextColor(Color.parseColor("#8E8E93"));
-        btnCancel.setPadding(40, 12, 40, 12);
+        btnCancel.setPadding(48, 14, 48, 14);
         btnCancel.setOnClickListener(v2 -> dialog.dismiss());
 
         TextView btnOK = new TextView(requireContext());
         btnOK.setText("确定");
         btnOK.setTextSize(16);
         btnOK.setTextColor(Color.parseColor("#FF9500"));
-        btnOK.setPadding(40, 12, 40, 12);
+        btnOK.setPadding(48, 14, 48, 14);
         btnOK.setOnClickListener(v2 -> {
             dialog.dismiss();
-            callback.onTimePicked(hourPicker.getValue(), minutePicker.getValue());
+            try {
+                int h = Integer.parseInt(etHour.getText().toString());
+                int m = Integer.parseInt(etMinute.getText().toString());
+                if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
+                    callback.onTimePicked(h, m);
+                }
+            } catch (NumberFormatException ignored) {}
         });
 
         btnRow.addView(btnCancel);
@@ -220,98 +253,129 @@ public class SleepScheduleFragment extends Fragment {
         prefsHelper.saveSchedules(schedules);
     }
 
+    /**
+     * 统一的选项弹窗：可滚动，包含重复、铃音、渐强、每日播报
+     */
     private void showOptionsDialog() {
         Dialog dialog = new Dialog(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_NoActionBar);
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = (int) (requireContext().getResources().getDisplayMetrics().widthPixels * 0.85);
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        lp.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
+        lp.y = (int) (requireContext().getResources().getDisplayMetrics().heightPixels * 0.08);
+        dialog.getWindow().setAttributes(lp);
+
+        ScrollView sv = new ScrollView(requireContext());
         LinearLayout root = new LinearLayout(requireContext());
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(0, 0, 0, 0);
+        root.setPadding(0, 32, 0, 32);
         root.setBackgroundColor(0xFF1C1C1E);
 
         TextView tvTitle = new TextView(requireContext());
-        tvTitle.setText("选项");
-        tvTitle.setTextSize(18);
+        tvTitle.setText("就寝设置");
+        tvTitle.setTextSize(20);
         tvTitle.setTextColor(Color.WHITE);
-        tvTitle.setPadding(40, 32, 40, 8);
+        tvTitle.setGravity(Gravity.CENTER);
+        tvTitle.setPadding(0, 0, 0, 16);
         root.addView(tvTitle);
 
-        addOptionItem(root, "设置重复", () -> {
-            dialog.dismiss();
-            showRepeatDialog();
+        // 重复日
+        addOptionSectionTitle(root, "重复");
+        showRepeatSection(root, dialog);
+
+        // 铃音
+        addOptionSectionTitle(root, "铃音");
+        TextView tvRingtone = new TextView(requireContext());
+        tvRingtone.setText("点击选择铃声");
+        tvRingtone.setTextSize(16);
+        tvRingtone.setTextColor(Color.parseColor("#8E8E93"));
+        tvRingtone.setPadding(40, 14, 40, 14);
+        tvRingtone.setBackgroundColor(0xFF2C2C2E);
+        tvRingtone.setOnClickListener(v -> {
+            Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM);
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "选择闹钟铃声");
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, tempRingtoneUri);
+            startActivityForResult(intent, RINGTONE_REQUEST);
         });
-        addOptionItem(root, "设置渐响时长", () -> {
-            dialog.dismiss();
-            showGradualDialog();
-        });
-        addOptionItem(root, "查看每日播报", () -> {
+        root.addView(tvRingtone);
+
+        // 渐响
+        addOptionSectionTitle(root, "渐响时长");
+        showGradualSection(root, dialog);
+
+        // 每日播报
+        addOptionSectionTitle(root, "每日播报");
+        LinearLayout briefingRow = new LinearLayout(requireContext());
+        briefingRow.setOrientation(LinearLayout.HORIZONTAL);
+        briefingRow.setGravity(Gravity.CENTER_VERTICAL);
+        briefingRow.setPadding(40, 12, 40, 12);
+        briefingRow.setBackgroundColor(0xFF2C2C2E);
+
+        TextView tvBriefing = new TextView(requireContext());
+        tvBriefing.setText("启用每日播报");
+        tvBriefing.setTextSize(16);
+        tvBriefing.setTextColor(Color.WHITE);
+
+        MaterialSwitch swBriefing = new MaterialSwitch(requireContext());
+        swBriefing.setChecked(prefsHelper.isBriefingEnabled());
+        swBriefing.setOnCheckedChangeListener((btn, c) -> prefsHelper.setBriefingEnabled(c));
+
+        briefingRow.addView(tvBriefing);
+        briefingRow.addView(new View(requireContext()) {{
+            setLayoutParams(new LinearLayout.LayoutParams(0, 1, 1));
+        }});
+        briefingRow.addView(swBriefing);
+        root.addView(briefingRow);
+
+        // 查看每日播报
+        TextView tvViewBriefing = new TextView(requireContext());
+        tvViewBriefing.setText("查看每日播报 >");
+        tvViewBriefing.setTextSize(16);
+        tvViewBriefing.setTextColor(Color.parseColor("#FF9500"));
+        tvViewBriefing.setPadding(40, 14, 40, 14);
+        tvViewBriefing.setOnClickListener(v -> {
             dialog.dismiss();
             startActivity(new Intent(requireContext(), DailyBriefingActivity.class));
         });
+        root.addView(tvViewBriefing);
 
+        // 关闭
         TextView btnClose = new TextView(requireContext());
-        btnClose.setText("取消");
+        btnClose.setText("关闭");
         btnClose.setTextSize(16);
         btnClose.setTextColor(Color.parseColor("#FF9500"));
-        btnClose.setGravity(android.view.Gravity.CENTER);
-        btnClose.setPadding(40, 24, 40, 32);
+        btnClose.setGravity(Gravity.CENTER);
+        btnClose.setPadding(40, 24, 40, 8);
         btnClose.setOnClickListener(v -> dialog.dismiss());
         root.addView(btnClose);
 
-        dialog.setContentView(root);
+        sv.addView(root);
+        dialog.setContentView(sv);
         dialog.show();
     }
 
-    private void addOptionItem(LinearLayout root, String text, Runnable action) {
-        TextView item = new TextView(requireContext());
-        item.setText(text);
-        item.setTextSize(17);
-        item.setTextColor(Color.WHITE);
-        item.setPadding(40, 16, 40, 16);
-        item.setBackgroundColor(0xFF1C1C1E);
-        item.setOnClickListener(v -> action.run());
-        root.addView(item);
-
-        // Separator
-        View sep = new View(requireContext());
-        sep.setBackgroundColor(0xFF2C2C2E);
-        sep.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 1));
-        root.addView(sep);
-    }
-
-    private void showRepeatDialog() {
-        Dialog dialog = new Dialog(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_NoActionBar);
-        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-
-        LinearLayout root = new LinearLayout(requireContext());
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(40, 32, 40, 32);
-        root.setBackgroundColor(0xFF1C1C1E);
-
-        TextView tvTitle = new TextView(requireContext());
-        tvTitle.setText("选择重复日期");
-        tvTitle.setTextSize(18);
-        tvTitle.setTextColor(Color.WHITE);
-        tvTitle.setPadding(0, 0, 0, 20);
-        root.addView(tvTitle);
-
+    private void showRepeatSection(LinearLayout root, Dialog parentDialog) {
         String[] dayNames = {"周日", "周一", "周二", "周三", "周四", "周五", "周六"};
         boolean[] selected = schedule.getRepeatDays().clone();
-        TextView[] dayViews = new TextView[7];
 
         LinearLayout daysContainer = new LinearLayout(requireContext());
         daysContainer.setOrientation(LinearLayout.HORIZONTAL);
-        daysContainer.setGravity(android.view.Gravity.CENTER);
+        daysContainer.setGravity(Gravity.CENTER);
+        daysContainer.setPadding(0, 8, 0, 8);
 
         for (int i = 0; i < 7; i++) {
             final int idx = i;
             TextView dayView = new TextView(requireContext());
             dayView.setText(dayNames[i]);
-            dayView.setTextSize(14);
-            dayView.setPadding(8, 10, 8, 10);
-            dayView.setGravity(android.view.Gravity.CENTER);
-            if (selected[i]) {
+            dayView.setTextSize(13);
+            dayView.setPadding(6, 8, 6, 8);
+            dayView.setGravity(Gravity.CENTER);
+            dayView.setMinWidth(36);
+            if (selected[idx]) {
                 dayView.setTextColor(Color.BLACK);
                 dayView.setBackgroundColor(Color.parseColor("#FF9500"));
             } else {
@@ -328,112 +392,97 @@ public class SleepScheduleFragment extends Fragment {
                     dayView.setBackgroundColor(0xFF2C2C2E);
                 }
             });
-            dayViews[i] = dayView;
 
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT);
-            params.setMargins(3, 0, 3, 0);
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            params.setMargins(2, 0, 2, 0);
             dayView.setLayoutParams(params);
             daysContainer.addView(dayView);
         }
         root.addView(daysContainer);
 
-        LinearLayout btnRow = new LinearLayout(requireContext());
-        btnRow.setOrientation(LinearLayout.HORIZONTAL);
-        btnRow.setGravity(android.view.Gravity.CENTER);
-        btnRow.setPadding(0, 24, 0, 0);
-
-        TextView btnCancel = new TextView(requireContext());
-        btnCancel.setText("取消");
-        btnCancel.setTextSize(16);
-        btnCancel.setTextColor(Color.parseColor("#8E8E93"));
-        btnCancel.setPadding(40, 12, 40, 12);
-        btnCancel.setOnClickListener(v2 -> dialog.dismiss());
-
+        // OK button for repeat
         TextView btnOK = new TextView(requireContext());
         btnOK.setText("确定");
-        btnOK.setTextSize(16);
+        btnOK.setTextSize(14);
         btnOK.setTextColor(Color.parseColor("#FF9500"));
-        btnOK.setPadding(40, 12, 40, 12);
-        btnOK.setOnClickListener(v2 -> {
-            dialog.dismiss();
+        btnOK.setGravity(Gravity.CENTER);
+        btnOK.setPadding(0, 8, 0, 0);
+        btnOK.setOnClickListener(v -> {
             schedule.setRepeatDays(selected);
             saveSchedule();
             if (schedule.isEnabled()) {
                 AlarmManagerHelper.setSleepAlarm(requireContext(), schedule);
             }
         });
-
-        btnRow.addView(btnCancel);
-        btnRow.addView(btnOK);
-        root.addView(btnRow);
-
-        dialog.setContentView(root);
-        dialog.show();
+        root.addView(btnOK);
     }
 
-    private void showGradualDialog() {
-        Dialog dialog = new Dialog(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_NoActionBar);
-        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-
-        LinearLayout root = new LinearLayout(requireContext());
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(40, 32, 40, 32);
-        root.setBackgroundColor(0xFF1C1C1E);
-
-        TextView tvTitle = new TextView(requireContext());
-        tvTitle.setText("渐响时长");
-        tvTitle.setTextSize(18);
-        tvTitle.setTextColor(Color.WHITE);
-        tvTitle.setPadding(0, 0, 0, 20);
-        root.addView(tvTitle);
-
+    private void showGradualSection(LinearLayout root, Dialog parentDialog) {
         String[] options = {"1分钟", "3分钟", "5分钟", "10分钟", "15分钟", "20分钟", "30分钟"};
         int[] values = {1, 3, 5, 10, 15, 20, 30};
 
-        for (int i = 0; i < options.length; i++) {
-            final int idx = i;
-            TextView item = new TextView(requireContext());
-            item.setText(options[i]);
-            item.setTextSize(17);
-            item.setTextColor(Color.WHITE);
-            item.setPadding(0, 14, 0, 14);
-            if (values[i] == schedule.getGradualMinutes()) {
-                item.setTextColor(Color.parseColor("#FF9500"));
-            }
-            item.setOnClickListener(v2 -> {
-                dialog.dismiss();
-                schedule.setGradualMinutes(values[idx]);
-                saveSchedule();
-            });
-            root.addView(item);
+        LinearLayout gradualRow = new LinearLayout(requireContext());
+        gradualRow.setOrientation(LinearLayout.HORIZONTAL);
+        gradualRow.setGravity(Gravity.CENTER);
+        gradualRow.setPadding(0, 8, 0, 0);
 
-            if (i < options.length - 1) {
-                View sep = new View(requireContext());
-                sep.setBackgroundColor(0xFF2C2C2E);
-                sep.setLayoutParams(new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT, 1));
-                root.addView(sep);
+        for (int i = 0; i < options.length; i++) {
+            final int val = values[i];
+            TextView tv = new TextView(requireContext());
+            tv.setText(options[i]);
+            tv.setTextSize(12);
+            tv.setPadding(6, 8, 6, 8);
+            tv.setGravity(Gravity.CENTER);
+            tv.setMinWidth(42);
+            if (val == schedule.getGradualMinutes()) {
+                tv.setTextColor(Color.BLACK);
+                tv.setBackgroundColor(Color.parseColor("#FF9500"));
+            } else {
+                tv.setTextColor(Color.parseColor("#8E8E93"));
+                tv.setBackgroundColor(0xFF2C2C2E);
+            }
+            tv.setOnClickListener(v2 -> {
+                schedule.setGradualMinutes(val);
+                saveSchedule();
+                // update all styles
+                for (int j = 0; j < gradualRow.getChildCount(); j++) {
+                    View child = gradualRow.getChildAt(j);
+                    if (child instanceof TextView) {
+                        ((TextView) child).setTextColor(Color.parseColor("#8E8E93"));
+                        child.setBackgroundColor(0xFF2C2C2E);
+                    }
+                }
+                tv.setTextColor(Color.BLACK);
+                tv.setBackgroundColor(Color.parseColor("#FF9500"));
+            });
+
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            params.setMargins(2, 0, 2, 0);
+            tv.setLayoutParams(params);
+            gradualRow.addView(tv);
+        }
+        root.addView(gradualRow);
+    }
+
+    private void addOptionSectionTitle(LinearLayout root, String text) {
+        TextView tv = new TextView(requireContext());
+        tv.setText(text);
+        tv.setTextSize(14);
+        tv.setTextColor(Color.parseColor("#8E8E93"));
+        tv.setPadding(40, 20, 40, 8);
+        root.addView(tv);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RINGTONE_REQUEST && data != null) {
+            Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+            if (uri != null) {
+                tempRingtoneUri = uri;
             }
         }
-
-        LinearLayout btnRow = new LinearLayout(requireContext());
-        btnRow.setOrientation(LinearLayout.HORIZONTAL);
-        btnRow.setGravity(android.view.Gravity.CENTER);
-        btnRow.setPadding(0, 16, 0, 0);
-
-        TextView btnCancel = new TextView(requireContext());
-        btnCancel.setText("取消");
-        btnCancel.setTextSize(16);
-        btnCancel.setTextColor(Color.parseColor("#8E8E93"));
-        btnCancel.setPadding(40, 12, 40, 12);
-        btnCancel.setOnClickListener(v2 -> dialog.dismiss());
-
-        btnRow.addView(btnCancel);
-        root.addView(btnRow);
-
-        dialog.setContentView(root);
-        dialog.show();
     }
 }

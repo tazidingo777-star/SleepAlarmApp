@@ -1,14 +1,20 @@
 package com.sleepalarm.app.ui;
 
 import android.app.Dialog;
-import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,12 +39,17 @@ import java.util.List;
 
 public class AlarmsFragment extends Fragment {
 
+    private static final int RINGTONE_REQUEST = 1001;
+
     private RecyclerView recyclerView;
-    private FloatingActionButton fab;
+    private FloatingActionButton fabEmpty, fabNormal;
     private View layoutEmpty;
     private PreferencesHelper prefsHelper;
     private AlarmAdapter adapter;
     private List<Alarm> alarms;
+
+    // 临时保存新建闹钟的铃声 URI
+    private Uri tempRingtoneUri;
 
     @Nullable
     @Override
@@ -51,8 +62,10 @@ public class AlarmsFragment extends Fragment {
         recyclerView = v.findViewById(R.id.recycler_alarms);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        fab = v.findViewById(R.id.fab_add_alarm);
-        fab.setOnClickListener(view -> showAddAlarmDialog());
+        fabEmpty = v.findViewById(R.id.fab_add_alarm_empty);
+        fabNormal = v.findViewById(R.id.fab_add_alarm);
+        fabEmpty.setOnClickListener(view -> showAddAlarmDialog());
+        fabNormal.setOnClickListener(view -> showAddAlarmDialog());
 
         loadAlarms();
         return v;
@@ -66,9 +79,11 @@ public class AlarmsFragment extends Fragment {
         if (alarms.isEmpty()) {
             layoutEmpty.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
+            fabNormal.setVisibility(View.GONE);
         } else {
             layoutEmpty.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
+            fabNormal.setVisibility(View.VISIBLE);
         }
     }
 
@@ -78,62 +93,66 @@ public class AlarmsFragment extends Fragment {
 
     private void showAlarmDialog(@Nullable Alarm existingAlarm) {
         final Alarm alarm = existingAlarm != null ? existingAlarm : new Alarm();
-        showWheelTimePicker(alarm.getHour(), alarm.getMinute(), (hour, minute) -> {
-            alarm.setHour(hour);
-            alarm.setMinute(minute);
-            showAlarmDetailDialog(alarm);
-        });
+        tempRingtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        showUnifiedAlarmDialog(alarm, existingAlarm != null);
     }
 
-    private void showWheelTimePicker(int initialHour, int initialMinute, TimePickedCallback callback) {
+    /**
+     * 统一的闹钟设置弹窗：80%宽度、顶部对齐、可滚动
+     * 包含：时间轮盘、重复日、标签、铃音、渐强
+     */
+    private void showUnifiedAlarmDialog(Alarm alarm, boolean isEditing) {
         Dialog dialog = new Dialog(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_NoActionBar);
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
+        // 80% 宽度，顶部留20%边距
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = (int) (requireContext().getResources().getDisplayMetrics().widthPixels * 0.80);
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        lp.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
+        lp.y = (int) (requireContext().getResources().getDisplayMetrics().heightPixels * 0.08);
+        dialog.getWindow().setAttributes(lp);
+
+        ScrollView scrollView = new ScrollView(requireContext());
         LinearLayout root = new LinearLayout(requireContext());
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(40, 32, 40, 32);
+        root.setPadding(32, 28, 32, 28);
         root.setBackgroundColor(0xFF1C1C1E);
 
-        // Title
-        TextView title = new TextView(requireContext());
-        title.setText("设置闹钟时间");
-        title.setTextSize(18);
-        title.setTextColor(Color.WHITE);
-        title.setPadding(0, 0, 0, 20);
-        root.addView(title);
+        // === 标题 ===
+        TextView tvTitle = new TextView(requireContext());
+        tvTitle.setText(alarm.getTimeText());
+        tvTitle.setTextSize(24);
+        tvTitle.setTextColor(Color.parseColor("#FF9500"));
+        tvTitle.setGravity(Gravity.CENTER);
+        tvTitle.setPadding(0, 0, 0, 16);
+        root.addView(tvTitle);
 
-        // Time display that's clickable for direct input
-        TextView tvTimeDisplay = new TextView(requireContext());
-        tvTimeDisplay.setText(String.format("%02d:%02d", initialHour, initialMinute));
-        tvTimeDisplay.setTextSize(42);
-        tvTimeDisplay.setTextColor(Color.parseColor("#FF9500"));
-        tvTimeDisplay.setGravity(android.view.Gravity.CENTER);
-        tvTimeDisplay.setPadding(0, 16, 0, 20);
-        root.addView(tvTimeDisplay);
-
-        // NumberPicker container
+        // === 时间选择（轮盘） ===
+        addSectionTitle(root, "时间");
         LinearLayout pickerRow = new LinearLayout(requireContext());
         pickerRow.setOrientation(LinearLayout.HORIZONTAL);
-        pickerRow.setGravity(android.view.Gravity.CENTER);
+        pickerRow.setGravity(Gravity.CENTER);
 
         NumberPicker hourPicker = new NumberPicker(requireContext());
         hourPicker.setMinValue(0);
         hourPicker.setMaxValue(23);
-        hourPicker.setValue(initialHour);
+        hourPicker.setValue(alarm.getHour());
         hourPicker.setFormatter(i -> String.format("%02d", i));
         hourPicker.setTextColor(Color.WHITE);
         ViewUtils.setNumberPickerDividerColor(hourPicker, Color.parseColor("#FF9500"));
 
         TextView sep = new TextView(requireContext());
         sep.setText(":");
-        sep.setTextSize(32);
+        sep.setTextSize(28);
         sep.setTextColor(Color.WHITE);
-        sep.setPadding(16, 0, 16, 0);
+        sep.setPadding(12, 0, 12, 0);
 
         NumberPicker minutePicker = new NumberPicker(requireContext());
         minutePicker.setMinValue(0);
         minutePicker.setMaxValue(59);
-        minutePicker.setValue(initialMinute);
+        minutePicker.setValue(alarm.getMinute());
         minutePicker.setFormatter(i -> String.format("%02d", i));
         minutePicker.setTextColor(Color.WHITE);
         ViewUtils.setNumberPickerDividerColor(minutePicker, Color.parseColor("#FF9500"));
@@ -143,78 +162,272 @@ public class AlarmsFragment extends Fragment {
         pickerRow.addView(minutePicker);
         root.addView(pickerRow);
 
-        // Update time display when wheel changes
-        NumberPicker.OnValueChangeListener wheelListener = (picker, oldVal, newVal) -> {
-            tvTimeDisplay.setText(String.format("%02d:%02d", hourPicker.getValue(), minutePicker.getValue()));
-        };
-        hourPicker.setOnValueChangedListener(wheelListener);
-        minutePicker.setOnValueChangedListener(wheelListener);
-
-        // Click time display to input directly
-        tvTimeDisplay.setOnClickListener(v -> {
+        tvTitle.setOnClickListener(v -> {
             android.app.TimePickerDialog tpd = new android.app.TimePickerDialog(requireContext(),
                     (view, h, m) -> {
                         hourPicker.setValue(h);
                         minutePicker.setValue(m);
+                        tvTitle.setText(String.format("%02d:%02d", h, m));
                     },
                     hourPicker.getValue(), minutePicker.getValue(), true);
             tpd.setTitle("输入时间");
             tpd.show();
         });
 
-        // Buttons
+        NumberPicker.OnValueChangeListener wheelListener = (picker, oldVal, newVal) -> {
+            tvTitle.setText(String.format("%02d:%02d", hourPicker.getValue(), minutePicker.getValue()));
+        };
+        hourPicker.setOnValueChangedListener(wheelListener);
+        minutePicker.setOnValueChangedListener(wheelListener);
+
+        // === 标签 ===
+        addSectionTitle(root, "标签");
+        EditText etLabel = new EditText(requireContext());
+        etLabel.setText(alarm.getLabel());
+        etLabel.setTextSize(16);
+        etLabel.setTextColor(Color.WHITE);
+        etLabel.setHintTextColor(Color.parseColor("#636366"));
+        etLabel.setHint("闹钟名称");
+        etLabel.setBackgroundColor(0xFF2C2C2E);
+        etLabel.setPadding(24, 16, 24, 16);
+        etLabel.setSingleLine(true);
+        root.addView(etLabel);
+
+        // === 重复日 ===
+        addSectionTitle(root, "重复");
+        String[] dayNames = {"周日", "周一", "周二", "周三", "周四", "周五", "周六"};
+        boolean[] selectedDays = alarm.getRepeatDays().clone();
+
+        LinearLayout daysContainer = new LinearLayout(requireContext());
+        daysContainer.setOrientation(LinearLayout.HORIZONTAL);
+        daysContainer.setGravity(Gravity.CENTER);
+
+        for (int i = 0; i < 7; i++) {
+            final int idx = i;
+            TextView dayView = new TextView(requireContext());
+            dayView.setText(dayNames[i]);
+            dayView.setTextSize(13);
+            dayView.setPadding(6, 8, 6, 8);
+            dayView.setGravity(Gravity.CENTER);
+            dayView.setMinWidth(36);
+            updateDayStyle(dayView, selectedDays[idx]);
+            dayView.setOnClickListener(v2 -> {
+                selectedDays[idx] = !selectedDays[idx];
+                updateDayStyle(dayView, selectedDays[idx]);
+            });
+
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            params.setMargins(2, 0, 2, 0);
+            dayView.setLayoutParams(params);
+            daysContainer.addView(dayView);
+        }
+        root.addView(daysContainer);
+
+        // === 铃音 ===
+        addSectionTitle(root, "铃音");
+        TextView tvRingtone = new TextView(requireContext());
+        tvRingtone.setText("点击选择铃声");
+        tvRingtone.setTextSize(16);
+        tvRingtone.setTextColor(Color.parseColor("#8E8E93"));
+        tvRingtone.setPadding(24, 14, 24, 14);
+        tvRingtone.setBackgroundColor(0xFF2C2C2E);
+        tvRingtone.setOnClickListener(v2 -> {
+            Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM);
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "选择闹钟铃声");
+            intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, tempRingtoneUri);
+            startActivityForResult(intent, RINGTONE_REQUEST);
+            // 用 liveData 方式：暂存到 fragment 成员
+        });
+        root.addView(tvRingtone);
+
+        // === 渐响开关 ===
+        addSectionTitle(root, "渐响音量");
+        LinearLayout gradualRow = new LinearLayout(requireContext());
+        gradualRow.setOrientation(LinearLayout.HORIZONTAL);
+        gradualRow.setGravity(Gravity.CENTER_VERTICAL);
+        gradualRow.setPadding(24, 12, 24, 12);
+        gradualRow.setBackgroundColor(0xFF2C2C2E);
+
+        TextView tvGradual = new TextView(requireContext());
+        tvGradual.setText("渐响");
+        tvGradual.setTextSize(16);
+        tvGradual.setTextColor(Color.WHITE);
+
+        MaterialSwitch swGradual = new MaterialSwitch(requireContext());
+        swGradual.setChecked(alarm.getGradualMinutes() > 0);
+
+        gradualRow.addView(tvGradual);
+        gradualRow.addView(new View(requireContext()) {{
+            setLayoutParams(new LinearLayout.LayoutParams(0, 1, 1));
+        }});
+        gradualRow.addView(swGradual);
+        root.addView(gradualRow);
+
+        // 渐响时长选择
+        LinearLayout gradualDurationRow = new LinearLayout(requireContext());
+        gradualDurationRow.setOrientation(LinearLayout.HORIZONTAL);
+        gradualDurationRow.setGravity(Gravity.CENTER);
+        gradualDurationRow.setPadding(0, 8, 0, 0);
+        gradualDurationRow.setVisibility(swGradual.isChecked() ? View.VISIBLE : View.GONE);
+
+        int[] gradualValues = {1, 3, 5, 10, 15, 20, 30};
+        String[] gradualLabels = {"1分", "3分", "5分", "10分", "15分", "20分", "30分"};
+        int currentGradual = alarm.getGradualMinutes();
+        if (currentGradual <= 0) currentGradual = 5;
+        final int[] selectedGradual = {currentGradual};
+
+        for (int i = 0; i < gradualValues.length; i++) {
+            final int val = gradualValues[i];
+            TextView tv = new TextView(requireContext());
+            tv.setText(gradualLabels[i]);
+            tv.setTextSize(12);
+            tv.setPadding(6, 6, 6, 6);
+            tv.setGravity(Gravity.CENTER);
+            tv.setMinWidth(36);
+            if (val == currentGradual) {
+                tv.setTextColor(Color.BLACK);
+                tv.setBackgroundColor(Color.parseColor("#FF9500"));
+            } else {
+                tv.setTextColor(Color.parseColor("#8E8E93"));
+                tv.setBackgroundColor(0xFF2C2C2E);
+            }
+            final int idx = i;
+            tv.setOnClickListener(v3 -> {
+                selectedGradual[0] = val;
+                for (int j = 0; j < gradualDurationRow.getChildCount(); j++) {
+                    View child = gradualDurationRow.getChildAt(j);
+                    if (child instanceof TextView) {
+                        ((TextView) child).setTextColor(Color.parseColor("#8E8E93"));
+                        child.setBackgroundColor(0xFF2C2C2E);
+                    }
+                }
+                tv.setTextColor(Color.BLACK);
+                tv.setBackgroundColor(Color.parseColor("#FF9500"));
+            });
+            gradualDurationRow.addView(tv);
+        }
+        root.addView(gradualDurationRow);
+
+        swGradual.setOnCheckedChangeListener((btn, checked) -> {
+            gradualDurationRow.setVisibility(checked ? View.VISIBLE : View.GONE);
+        });
+
+        // === 振动 ===
+        LinearLayout vibrateRow = new LinearLayout(requireContext());
+        vibrateRow.setOrientation(LinearLayout.HORIZONTAL);
+        vibrateRow.setGravity(Gravity.CENTER_VERTICAL);
+        vibrateRow.setPadding(24, 12, 24, 12);
+        vibrateRow.setBackgroundColor(0xFF2C2C2E);
+        vibrateRow.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        TextView tvVibrate = new TextView(requireContext());
+        tvVibrate.setText("振动");
+        tvVibrate.setTextSize(16);
+        tvVibrate.setTextColor(Color.WHITE);
+
+        MaterialSwitch swVibrate = new MaterialSwitch(requireContext());
+        swVibrate.setChecked(alarm.isVibrate());
+
+        vibrateRow.addView(tvVibrate);
+        vibrateRow.addView(new View(requireContext()) {{
+            setLayoutParams(new LinearLayout.LayoutParams(0, 1, 1));
+        }});
+        vibrateRow.addView(swVibrate);
+        root.addView(vibrateRow);
+
+        // === 按钮 ===
         LinearLayout btnRow = new LinearLayout(requireContext());
         btnRow.setOrientation(LinearLayout.HORIZONTAL);
-        btnRow.setGravity(android.view.Gravity.CENTER);
+        btnRow.setGravity(Gravity.CENTER);
         btnRow.setPadding(0, 24, 0, 0);
 
         TextView btnCancel = new TextView(requireContext());
         btnCancel.setText("取消");
         btnCancel.setTextSize(16);
         btnCancel.setTextColor(Color.parseColor("#8E8E93"));
-        btnCancel.setPadding(40, 12, 40, 12);
+        btnCancel.setPadding(48, 14, 48, 14);
         btnCancel.setOnClickListener(v2 -> dialog.dismiss());
 
-        TextView btnOK = new TextView(requireContext());
-        btnOK.setText("确定");
-        btnOK.setTextSize(16);
-        btnOK.setTextColor(Color.parseColor("#FF9500"));
-        btnOK.setPadding(40, 12, 40, 12);
-        btnOK.setOnClickListener(v2 -> {
+        TextView btnSave = new TextView(requireContext());
+        btnSave.setText("保存");
+        btnSave.setTextSize(16);
+        btnSave.setTextColor(Color.parseColor("#FF9500"));
+        btnSave.setPadding(48, 14, 48, 14);
+        btnSave.setOnClickListener(v2 -> {
             dialog.dismiss();
-            callback.onTimePicked(hourPicker.getValue(), minutePicker.getValue());
+            alarm.setHour(hourPicker.getValue());
+            alarm.setMinute(minutePicker.getValue());
+            alarm.setLabel(etLabel.getText().toString().trim().isEmpty() ? "闹钟" : etLabel.getText().toString().trim());
+            alarm.setRepeatDays(selectedDays);
+
+            // 渐强时长
+            int selGradual = selectedGradual[0];
+            if (!swGradual.isChecked()) selGradual = 0;
+            alarm.setGradualMinutes(selGradual);
+
+            alarm.setVibrate(swVibrate.isChecked());
+            alarm.setEnabled(true);
+
+            prefsHelper.saveAlarm(alarm);
+            AlarmManagerHelper.setAlarm(requireContext(), alarm);
+            loadAlarms();
         });
 
+        // 删除按钮（仅编辑已有闹钟时显示）
         btnRow.addView(btnCancel);
-        btnRow.addView(btnOK);
-        root.addView(btnRow);
+        if (isEditing) {
+            TextView btnDelete = new TextView(requireContext());
+            btnDelete.setText("删除");
+            btnDelete.setTextSize(16);
+            btnDelete.setTextColor(Color.parseColor("#FF3B30"));
+            btnDelete.setPadding(48, 14, 48, 14);
+            btnDelete.setOnClickListener(v2 -> {
+                dialog.dismiss();
+                AlarmManagerHelper.cancelAlarm(requireContext(), alarm);
+                prefsHelper.deleteAlarm(alarm.getId());
+                loadAlarms();
+            });
+            btnRow.addView(btnDelete);
+        }
+        btnRow.addView(btnSave);
 
-        dialog.setContentView(root);
+        root.addView(btnRow);
+        scrollView.addView(root);
+        dialog.setContentView(scrollView);
         dialog.show();
     }
 
-    private interface TimePickedCallback {
-        void onTimePicked(int hour, int minute);
+    private void updateDayStyle(TextView tv, boolean selected) {
+        if (selected) {
+            tv.setTextColor(Color.BLACK);
+            tv.setBackgroundColor(Color.parseColor("#FF9500"));
+        } else {
+            tv.setTextColor(Color.parseColor("#8E8E93"));
+            tv.setBackgroundColor(0xFF2C2C2E);
+        }
     }
 
-    private void showAlarmDetailDialog(Alarm alarm) {
-        String[] dayNames = {"周日", "周一", "周二", "周三", "周四", "周五", "周六"};
-        boolean[] selectedDays = alarm.getRepeatDays().clone();
+    private void addSectionTitle(LinearLayout root, String text) {
+        TextView tv = new TextView(requireContext());
+        tv.setText(text);
+        tv.setTextSize(14);
+        tv.setTextColor(Color.parseColor("#8E8E93"));
+        tv.setPadding(0, 20, 0, 10);
+        root.addView(tv);
+    }
 
-        new AlertDialog.Builder(requireContext())
-                .setTitle(alarm.getTimeText())
-                .setMultiChoiceItems(dayNames, selectedDays, (dialog, which, isChecked) -> {
-                    selectedDays[which] = isChecked;
-                })
-                .setPositiveButton("保存", (dialog, which) -> {
-                    alarm.setRepeatDays(selectedDays);
-                    alarm.setEnabled(true);
-                    prefsHelper.saveAlarm(alarm);
-                    AlarmManagerHelper.setAlarm(requireContext(), alarm);
-                    loadAlarms();
-                })
-                .setNegativeButton("取消", null)
-                .show();
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RINGTONE_REQUEST && data != null) {
+            Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+            if (uri != null) {
+                tempRingtoneUri = uri;
+            }
+        }
     }
 
     private class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.ViewHolder> {

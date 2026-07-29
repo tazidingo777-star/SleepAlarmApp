@@ -13,4 +13,6 @@
     <string name="view_briefing">查看每日播报</string>
     <string name="time_to_sleep">该睡觉了</string>
     <string name="good_morning">早上好</string>
+    <string name="theme_toggle">切换主题</string>
+    <string name="lock_screen_notification">锁屏通知</string>
 </resources>

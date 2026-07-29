@@ -92,10 +92,10 @@ public class CircleClockView extends View {
         tickPaint.setColor(colorTick);
         tickPaint.setStrokeCap(Paint.Cap.ROUND);
 
-        // 数字
+        // 数字 - 加大
         numberPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         numberPaint.setColor(colorNumber);
-        numberPaint.setTextSize(26f);
+        numberPaint.setTextSize(38f);
         numberPaint.setTextAlign(Paint.Align.CENTER);
 
         // 睡眠弧线
@@ -129,10 +129,10 @@ public class CircleClockView extends View {
         centerHourPaint.setTextAlign(Paint.Align.CENTER);
         centerHourPaint.setTypeface(Typeface.DEFAULT_BOLD);
 
-        // 中心单位（2倍大小）
+        // 中心单位
         centerUnitPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         centerUnitPaint.setColor(colorCenterUnit);
-        centerUnitPaint.setTextSize(48f);
+        centerUnitPaint.setTextSize(128f);
         centerUnitPaint.setTextAlign(Paint.Align.CENTER);
 
         // 睡眠背景（刻度盘浅灰圆）
@@ -226,12 +226,13 @@ public class CircleClockView extends View {
         int hours = sleepMinutes / 60;
         int minutes = sleepMinutes % 60;
 
-        String hourText = String.valueOf(hours);
-        String unitText = (minutes > 0) ? "小时" + minutes + "分" : "小时";
+        String hourText = hours + "";
+        String unitText = (minutes > 0) ? "小时 " + minutes + " 分" : "小时";
 
-        float cy = centerY;
-        canvas.drawText(hourText, centerX - 35, cy + 40, centerHourPaint);
-        canvas.drawText(unitText, centerX + 60, cy + 30, centerUnitPaint);
+        // 上下排列：先画数字，再画单位
+        float cy = centerY - 30;
+        canvas.drawText(hourText, centerX, cy, centerHourPaint);
+        canvas.drawText(unitText, centerX, cy + 110, centerUnitPaint);
     }
 
     // ===== 时间/角度转换 =====
