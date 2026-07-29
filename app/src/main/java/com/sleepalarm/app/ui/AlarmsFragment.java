@@ -3,6 +3,8 @@ package com.sleepalarm.app.ui;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +20,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.sleepalarm.app.utils.ThemeColors;
+import com.sleepalarm.app.utils.PressFeedbackHelper;
 import com.sleepalarm.app.utils.ViewUtils;
 
 import androidx.annotation.NonNull;
@@ -64,6 +68,8 @@ public class AlarmsFragment extends Fragment {
 
         fabEmpty = v.findViewById(R.id.fab_add_alarm_empty);
         fabNormal = v.findViewById(R.id.fab_add_alarm);
+        PressFeedbackHelper.apply(fabEmpty);
+        PressFeedbackHelper.apply(fabNormal);
         fabEmpty.setOnClickListener(view -> showAddAlarmDialog());
         fabNormal.setOnClickListener(view -> showAddAlarmDialog());
 
@@ -118,13 +124,16 @@ public class AlarmsFragment extends Fragment {
         LinearLayout root = new LinearLayout(requireContext());
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(32, 28, 32, 28);
-        root.setBackgroundColor(0xFF1C1C1E);
+        GradientDrawable rootBg = new GradientDrawable();
+        rootBg.setCornerRadius(dpToPx(16));
+        rootBg.setColor(ThemeColors.getSurface(requireContext()));
+        root.setBackground(rootBg);
 
         // === 标题 ===
         TextView tvTitle = new TextView(requireContext());
         tvTitle.setText(alarm.getTimeText());
         tvTitle.setTextSize(24);
-        tvTitle.setTextColor(Color.parseColor("#FF9500"));
+        tvTitle.setTextColor(ThemeColors.getAccent(requireContext()));
         tvTitle.setGravity(Gravity.CENTER);
         tvTitle.setPadding(0, 0, 0, 16);
         root.addView(tvTitle);
@@ -140,13 +149,13 @@ public class AlarmsFragment extends Fragment {
         hourPicker.setMaxValue(23);
         hourPicker.setValue(alarm.getHour());
         hourPicker.setFormatter(i -> String.format("%02d", i));
-        hourPicker.setTextColor(Color.WHITE);
-        ViewUtils.setNumberPickerDividerColor(hourPicker, Color.parseColor("#FF9500"));
+        hourPicker.setTextColor(ThemeColors.getTextPrimary(requireContext()));
+        ViewUtils.setNumberPickerDividerColor(hourPicker, ThemeColors.getAccent(requireContext()));
 
         TextView sep = new TextView(requireContext());
         sep.setText(":");
         sep.setTextSize(28);
-        sep.setTextColor(Color.WHITE);
+        sep.setTextColor(ThemeColors.getTextPrimary(requireContext()));
         sep.setPadding(12, 0, 12, 0);
 
         NumberPicker minutePicker = new NumberPicker(requireContext());
@@ -154,14 +163,15 @@ public class AlarmsFragment extends Fragment {
         minutePicker.setMaxValue(59);
         minutePicker.setValue(alarm.getMinute());
         minutePicker.setFormatter(i -> String.format("%02d", i));
-        minutePicker.setTextColor(Color.WHITE);
-        ViewUtils.setNumberPickerDividerColor(minutePicker, Color.parseColor("#FF9500"));
+        minutePicker.setTextColor(ThemeColors.getTextPrimary(requireContext()));
+        ViewUtils.setNumberPickerDividerColor(minutePicker, ThemeColors.getAccent(requireContext()));
 
         pickerRow.addView(hourPicker);
         pickerRow.addView(sep);
         pickerRow.addView(minutePicker);
         root.addView(pickerRow);
 
+        PressFeedbackHelper.apply(tvTitle);
         tvTitle.setOnClickListener(v -> {
             android.app.TimePickerDialog tpd = new android.app.TimePickerDialog(requireContext(),
                     (view, h, m) -> {
@@ -185,10 +195,13 @@ public class AlarmsFragment extends Fragment {
         EditText etLabel = new EditText(requireContext());
         etLabel.setText(alarm.getLabel());
         etLabel.setTextSize(16);
-        etLabel.setTextColor(Color.WHITE);
+        etLabel.setTextColor(ThemeColors.getTextPrimary(requireContext()));
         etLabel.setHintTextColor(Color.parseColor("#636366"));
         etLabel.setHint("闹钟名称");
-        etLabel.setBackgroundColor(0xFF2C2C2E);
+        GradientDrawable etBg = new GradientDrawable();
+        etBg.setCornerRadius(dpToPx(12));
+        etBg.setColor(ThemeColors.getSurfaceLight(requireContext()));
+        etLabel.setBackground(etBg);
         etLabel.setPadding(24, 16, 24, 16);
         etLabel.setSingleLine(true);
         root.addView(etLabel);
@@ -211,6 +224,7 @@ public class AlarmsFragment extends Fragment {
             dayView.setGravity(Gravity.CENTER);
             dayView.setMinWidth(36);
             updateDayStyle(dayView, selectedDays[idx]);
+            PressFeedbackHelper.apply(dayView);
             dayView.setOnClickListener(v2 -> {
                 selectedDays[idx] = !selectedDays[idx];
                 updateDayStyle(dayView, selectedDays[idx]);
@@ -229,9 +243,13 @@ public class AlarmsFragment extends Fragment {
         TextView tvRingtone = new TextView(requireContext());
         tvRingtone.setText("点击选择铃声");
         tvRingtone.setTextSize(16);
-        tvRingtone.setTextColor(Color.parseColor("#8E8E93"));
+        tvRingtone.setTextColor(ThemeColors.getTextSecondary(requireContext()));
         tvRingtone.setPadding(24, 14, 24, 14);
-        tvRingtone.setBackgroundColor(0xFF2C2C2E);
+        GradientDrawable ringtoneBg = new GradientDrawable();
+        ringtoneBg.setCornerRadius(dpToPx(12));
+        ringtoneBg.setColor(ThemeColors.getSurfaceLight(requireContext()));
+        tvRingtone.setBackground(ringtoneBg);
+        PressFeedbackHelper.apply(tvRingtone);
         tvRingtone.setOnClickListener(v2 -> {
             Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
             intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM);
@@ -248,12 +266,15 @@ public class AlarmsFragment extends Fragment {
         gradualRow.setOrientation(LinearLayout.HORIZONTAL);
         gradualRow.setGravity(Gravity.CENTER_VERTICAL);
         gradualRow.setPadding(24, 12, 24, 12);
-        gradualRow.setBackgroundColor(0xFF2C2C2E);
+        GradientDrawable gradRowBg = new GradientDrawable();
+        gradRowBg.setCornerRadius(dpToPx(12));
+        gradRowBg.setColor(ThemeColors.getSurfaceLight(requireContext()));
+        gradualRow.setBackground(gradRowBg);
 
         TextView tvGradual = new TextView(requireContext());
         tvGradual.setText("渐响");
         tvGradual.setTextSize(16);
-        tvGradual.setTextColor(Color.WHITE);
+        tvGradual.setTextColor(ThemeColors.getTextPrimary(requireContext()));
 
         MaterialSwitch swGradual = new MaterialSwitch(requireContext());
         swGradual.setChecked(alarm.getGradualMinutes() > 0);
@@ -286,25 +307,35 @@ public class AlarmsFragment extends Fragment {
             tv.setPadding(6, 6, 6, 6);
             tv.setGravity(Gravity.CENTER);
             tv.setMinWidth(36);
+            GradientDrawable gradChipBg = new GradientDrawable();
+            gradChipBg.setCornerRadius(dpToPx(8));
             if (val == currentGradual) {
-                tv.setTextColor(Color.BLACK);
-                tv.setBackgroundColor(Color.parseColor("#FF9500"));
+                tv.setTextColor(ThemeColors.getOnAccent(requireContext()));
+                gradChipBg.setColor(ThemeColors.getAccent(requireContext()));
             } else {
-                tv.setTextColor(Color.parseColor("#8E8E93"));
-                tv.setBackgroundColor(0xFF2C2C2E);
+                tv.setTextColor(ThemeColors.getTextSecondary(requireContext()));
+                gradChipBg.setColor(ThemeColors.getSurfaceLight(requireContext()));
             }
+            tv.setBackground(gradChipBg);
             final int idx = i;
+            PressFeedbackHelper.apply(tv);
             tv.setOnClickListener(v3 -> {
                 selectedGradual[0] = val;
                 for (int j = 0; j < gradualDurationRow.getChildCount(); j++) {
                     View child = gradualDurationRow.getChildAt(j);
                     if (child instanceof TextView) {
-                        ((TextView) child).setTextColor(Color.parseColor("#8E8E93"));
-                        child.setBackgroundColor(0xFF2C2C2E);
+                        ((TextView) child).setTextColor(ThemeColors.getTextSecondary(requireContext()));
+                        GradientDrawable unselBg = new GradientDrawable();
+                        unselBg.setCornerRadius(dpToPx(8));
+                        unselBg.setColor(ThemeColors.getSurfaceLight(requireContext()));
+                        child.setBackground(unselBg);
                     }
                 }
-                tv.setTextColor(Color.BLACK);
-                tv.setBackgroundColor(Color.parseColor("#FF9500"));
+                GradientDrawable selBg = new GradientDrawable();
+                selBg.setCornerRadius(dpToPx(8));
+                selBg.setColor(ThemeColors.getAccent(requireContext()));
+                tv.setBackground(selBg);
+                tv.setTextColor(ThemeColors.getOnAccent(requireContext()));
             });
             gradualDurationRow.addView(tv);
         }
@@ -319,14 +350,17 @@ public class AlarmsFragment extends Fragment {
         vibrateRow.setOrientation(LinearLayout.HORIZONTAL);
         vibrateRow.setGravity(Gravity.CENTER_VERTICAL);
         vibrateRow.setPadding(24, 12, 24, 12);
-        vibrateRow.setBackgroundColor(0xFF2C2C2E);
+        GradientDrawable vibRowBg = new GradientDrawable();
+        vibRowBg.setCornerRadius(dpToPx(12));
+        vibRowBg.setColor(ThemeColors.getSurfaceLight(requireContext()));
+        vibrateRow.setBackground(vibRowBg);
         vibrateRow.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
         TextView tvVibrate = new TextView(requireContext());
         tvVibrate.setText("振动");
         tvVibrate.setTextSize(16);
-        tvVibrate.setTextColor(Color.WHITE);
+        tvVibrate.setTextColor(ThemeColors.getTextPrimary(requireContext()));
 
         MaterialSwitch swVibrate = new MaterialSwitch(requireContext());
         swVibrate.setChecked(alarm.isVibrate());
@@ -347,15 +381,31 @@ public class AlarmsFragment extends Fragment {
         TextView btnCancel = new TextView(requireContext());
         btnCancel.setText("取消");
         btnCancel.setTextSize(16);
-        btnCancel.setTextColor(Color.parseColor("#8E8E93"));
-        btnCancel.setPadding(48, 14, 48, 14);
+        btnCancel.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        btnCancel.setTextColor(ThemeColors.getTextSecondary(requireContext()));
+        btnCancel.setPadding(48, 0, 48, 0);
+        btnCancel.setHeight(dpToPx(48));
+        btnCancel.setGravity(Gravity.CENTER);
+        GradientDrawable cancelBg = new GradientDrawable();
+        cancelBg.setCornerRadius(dpToPx(12));
+        cancelBg.setColor(android.graphics.Color.TRANSPARENT);
+        btnCancel.setBackground(cancelBg);
+        PressFeedbackHelper.apply(btnCancel);
         btnCancel.setOnClickListener(v2 -> dialog.dismiss());
 
         TextView btnSave = new TextView(requireContext());
         btnSave.setText("保存");
         btnSave.setTextSize(16);
-        btnSave.setTextColor(Color.parseColor("#FF9500"));
-        btnSave.setPadding(48, 14, 48, 14);
+        btnSave.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+        btnSave.setTextColor(ThemeColors.getOnAccent(requireContext()));
+        btnSave.setPadding(48, 0, 48, 0);
+        btnSave.setHeight(dpToPx(48));
+        btnSave.setGravity(Gravity.CENTER);
+        GradientDrawable saveBg = new GradientDrawable();
+        saveBg.setCornerRadius(dpToPx(12));
+        saveBg.setColor(ThemeColors.getAccent(requireContext()));
+        btnSave.setBackground(saveBg);
+        PressFeedbackHelper.apply(btnSave);
         btnSave.setOnClickListener(v2 -> {
             dialog.dismiss();
             alarm.setHour(hourPicker.getValue());
@@ -382,8 +432,16 @@ public class AlarmsFragment extends Fragment {
             TextView btnDelete = new TextView(requireContext());
             btnDelete.setText("删除");
             btnDelete.setTextSize(16);
+            btnDelete.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
             btnDelete.setTextColor(Color.parseColor("#FF3B30"));
-            btnDelete.setPadding(48, 14, 48, 14);
+            btnDelete.setPadding(48, 0, 48, 0);
+            btnDelete.setHeight(dpToPx(48));
+            btnDelete.setGravity(Gravity.CENTER);
+            GradientDrawable deleteBg = new GradientDrawable();
+            deleteBg.setCornerRadius(dpToPx(12));
+            deleteBg.setColor(android.graphics.Color.TRANSPARENT);
+            btnDelete.setBackground(deleteBg);
+            PressFeedbackHelper.apply(btnDelete);
             btnDelete.setOnClickListener(v2 -> {
                 dialog.dismiss();
                 AlarmManagerHelper.cancelAlarm(requireContext(), alarm);
@@ -401,20 +459,27 @@ public class AlarmsFragment extends Fragment {
     }
 
     private void updateDayStyle(TextView tv, boolean selected) {
+        GradientDrawable dayBg = new GradientDrawable();
+        dayBg.setCornerRadius(dpToPx(8));
         if (selected) {
-            tv.setTextColor(Color.BLACK);
-            tv.setBackgroundColor(Color.parseColor("#FF9500"));
+            tv.setTextColor(ThemeColors.getOnAccent(requireContext()));
+            dayBg.setColor(ThemeColors.getAccent(requireContext()));
         } else {
-            tv.setTextColor(Color.parseColor("#8E8E93"));
-            tv.setBackgroundColor(0xFF2C2C2E);
+            tv.setTextColor(ThemeColors.getTextSecondary(requireContext()));
+            dayBg.setColor(ThemeColors.getSurfaceLight(requireContext()));
         }
+        tv.setBackground(dayBg);
+    }
+
+    private int dpToPx(int dp) {
+        return (int) (dp * requireContext().getResources().getDisplayMetrics().density);
     }
 
     private void addSectionTitle(LinearLayout root, String text) {
         TextView tv = new TextView(requireContext());
         tv.setText(text);
         tv.setTextSize(14);
-        tv.setTextColor(Color.parseColor("#8E8E93"));
+        tv.setTextColor(ThemeColors.getTextSecondary(requireContext()));
         tv.setPadding(0, 20, 0, 10);
         root.addView(tv);
     }

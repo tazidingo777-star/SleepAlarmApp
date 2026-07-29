@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
 import com.sleepalarm.app.R;
+import com.sleepalarm.app.utils.PressFeedbackHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,10 @@ public class StopwatchFragment extends Fragment {
         btnStart = v.findViewById(R.id.btn_stopwatch_start);
         btnLap = v.findViewById(R.id.btn_stopwatch_lap);
         btnReset = v.findViewById(R.id.btn_stopwatch_reset);
+
+        PressFeedbackHelper.apply(btnReset);
+        PressFeedbackHelper.apply(btnStart);
+        PressFeedbackHelper.apply(btnLap);
 
         updateDisplay();
         btnLap.setEnabled(false);

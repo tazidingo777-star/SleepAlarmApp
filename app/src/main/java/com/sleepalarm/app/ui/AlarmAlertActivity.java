@@ -27,6 +27,7 @@ import com.sleepalarm.app.R;
 import com.sleepalarm.app.models.SleepSchedule;
 import com.sleepalarm.app.utils.AlarmManagerHelper;
 import com.sleepalarm.app.utils.PreferencesHelper;
+import com.sleepalarm.app.utils.PressFeedbackHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -122,6 +123,14 @@ public class AlarmAlertActivity extends AppCompatActivity {
         initViews(hour, minute);
         setupListeners();
         setupSlideToDismiss();
+
+        // 按压反馈（slideContainer 已有滑动手势，不额外添加）
+        View btnDismiss = findViewById(R.id.btn_dismiss);
+        PressFeedbackHelper.apply(btnDismiss);
+        View btnSnooze = findViewById(R.id.btn_snooze);
+        if (btnSnooze != null) {
+            PressFeedbackHelper.apply(btnSnooze);
+        }
 
         // 绑定服务
         bindService(new Intent(this, AlarmService.class), serviceConnection, Context.BIND_AUTO_CREATE);

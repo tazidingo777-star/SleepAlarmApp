@@ -2,6 +2,7 @@ package com.sleepalarm.app.ui;
 
 import android.app.Dialog;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -15,6 +16,8 @@ import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 
+import com.sleepalarm.app.utils.PressFeedbackHelper;
+import com.sleepalarm.app.utils.ThemeColors;
 import com.sleepalarm.app.utils.ViewUtils;
 
 import androidx.annotation.NonNull;
@@ -56,6 +59,12 @@ public class TimerFragment extends Fragment {
         btnStop = v.findViewById(R.id.btn_timer_stop);
 
         btnStop.setEnabled(false);
+
+        PressFeedbackHelper.apply(tvHours);
+        PressFeedbackHelper.apply(tvMinutes);
+        PressFeedbackHelper.apply(tvSeconds);
+        PressFeedbackHelper.apply(btnStart);
+        PressFeedbackHelper.apply(btnStop);
 
         // 设置轮盘
         setupNumberPicker(npHours, 0, 23, 0);
@@ -110,8 +119,8 @@ public class TimerFragment extends Fragment {
         picker.setMaxValue(max);
         picker.setValue(value);
         picker.setFormatter(i -> String.format("%02d", i));
-        picker.setTextColor(Color.WHITE);
-        ViewUtils.setNumberPickerDividerColor(picker, Color.parseColor("#FF9500"));
+        picker.setTextColor(ThemeColors.getTextPrimary(requireContext()));
+        ViewUtils.setNumberPickerDividerColor(picker, ThemeColors.getAccent(requireContext()));
     }
 
     private void updateFromWheels() {
@@ -129,23 +138,29 @@ public class TimerFragment extends Fragment {
         LinearLayout root = new LinearLayout(requireContext());
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(48, 32, 48, 32);
-        root.setBackgroundColor(0xFF1C1C1E);
+        GradientDrawable rootBg = new GradientDrawable();
+        rootBg.setCornerRadius(dpToPx(16));
+        rootBg.setColor(ThemeColors.getSurface(requireContext()));
+        root.setBackground(rootBg);
         root.setGravity(Gravity.CENTER_HORIZONTAL);
 
         TextView tvTitle = new TextView(requireContext());
         tvTitle.setText(title);
-        tvTitle.setTextSize(16);
-        tvTitle.setTextColor(Color.parseColor("#8E8E93"));
+        tvTitle.setTextSize(14);
+        tvTitle.setTextColor(ThemeColors.getTextSecondary(requireContext()));
         tvTitle.setPadding(0, 0, 0, 16);
         root.addView(tvTitle);
 
         EditText etInput = new EditText(requireContext());
         etInput.setText(String.format("%02d", initial));
         etInput.setTextSize(40);
-        etInput.setTextColor(Color.WHITE);
+        etInput.setTextColor(ThemeColors.getTextPrimary(requireContext()));
         etInput.setGravity(Gravity.CENTER);
         etInput.setInputType(InputType.TYPE_CLASS_NUMBER);
-        etInput.setBackgroundColor(0xFF2C2C2E);
+        GradientDrawable inputBg = new GradientDrawable();
+        inputBg.setCornerRadius(dpToPx(12));
+        inputBg.setColor(ThemeColors.getSurfaceLight(requireContext()));
+        etInput.setBackground(inputBg);
         etInput.setPadding(32, 20, 32, 20);
         etInput.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -159,15 +174,19 @@ public class TimerFragment extends Fragment {
         TextView btnCancel = new TextView(requireContext());
         btnCancel.setText("取消");
         btnCancel.setTextSize(16);
-        btnCancel.setTextColor(Color.parseColor("#8E8E93"));
+        btnCancel.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+        btnCancel.setTextColor(ThemeColors.getTextSecondary(requireContext()));
         btnCancel.setPadding(48, 12, 48, 12);
+        PressFeedbackHelper.apply(btnCancel);
         btnCancel.setOnClickListener(v -> dialog.dismiss());
 
         TextView btnOK = new TextView(requireContext());
         btnOK.setText("确定");
         btnOK.setTextSize(16);
-        btnOK.setTextColor(Color.parseColor("#FF9500"));
+        btnOK.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+        btnOK.setTextColor(ThemeColors.getAccent(requireContext()));
         btnOK.setPadding(48, 12, 48, 12);
+        PressFeedbackHelper.apply(btnOK);
         btnOK.setOnClickListener(v -> {
             dialog.dismiss();
             try {
@@ -303,5 +322,9 @@ public class TimerFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         if (countDownTimer != null) countDownTimer.cancel();
+    }
+
+    private int dpToPx(int dp) {
+        return (int) (dp * requireContext().getResources().getDisplayMetrics().density);
     }
 }

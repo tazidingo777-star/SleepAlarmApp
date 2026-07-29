@@ -9,6 +9,8 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.sleepalarm.app.utils.ThemeColors;
+
 /**
  * iOS 时钟"就寝"风格环形时钟 View
  * - 12 小时制表盘，显示 1-12 数字刻度
@@ -18,17 +20,17 @@ import android.view.View;
  */
 public class CircleClockView extends View {
 
-    // iOS 风格颜色
-    private final int colorBackground = 0xFF000000;     // 纯黑背景
-    private final int colorTrack = 0xFF1C1C1E;          // 刻度盘背景色
-    private final int colorTick = 0xFF8E8E93;           // 灰色刻度
-    private final int colorNumber = 0xFF8E8E93;         // 灰色数字
-    private final int colorSleepArc = 0xFFFF9500;       // 橙色睡眠弧线 (iOS 橙)
-    private final int colorDotBorder = 0xFFFF9500;      // 圆点橙色描边
-    private final int colorDotFill = 0xFF000000;        // 圆点黑色填充
-    private final int colorDotIcon = 0xFFFFFFFF;        // 圆点白色图标
-    private final int colorCenterHour = 0xFFFFFFFF;     // 中心小时数字白色
-    private final int colorCenterUnit = 0xFF8E8E93;     // "小时" 灰色
+    // iOS 风格颜色（由 ThemeColors 动态解析）
+    private int colorBackground;
+    private int colorTrack;
+    private int colorTick;
+    private int colorNumber;
+    private int colorSleepArc;
+    private int colorDotBorder;
+    private int colorDotFill;
+    private int colorDotIcon;
+    private int colorCenterHour;
+    private int colorCenterUnit;
 
     // 尺寸
     private float centerX, centerY;
@@ -85,6 +87,19 @@ public class CircleClockView extends View {
     }
 
     private void init() {
+        // 从 ThemeColors 解析所有颜色
+        Context ctx = getContext();
+        colorBackground = ThemeColors.getBackground(ctx);
+        colorTrack = ThemeColors.getSurface(ctx);
+        colorTick = ThemeColors.getTextSecondary(ctx);
+        colorNumber = ThemeColors.getTextSecondary(ctx);
+        colorSleepArc = ThemeColors.getAccent(ctx);
+        colorDotBorder = ThemeColors.getAccent(ctx);
+        colorDotFill = ThemeColors.getBackground(ctx);
+        colorDotIcon = ThemeColors.getTextPrimary(ctx);
+        colorCenterHour = ThemeColors.getTextPrimary(ctx);
+        colorCenterUnit = ThemeColors.getTextSecondary(ctx);
+
         // 刻度
         tickPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         tickPaint.setStyle(Paint.Style.STROKE);

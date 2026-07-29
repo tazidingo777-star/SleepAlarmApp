@@ -14,6 +14,16 @@
         <item name="android:statusBarColor">@color/background</item>
         <item name="android:navigationBarColor">@color/background</item>
         <item name="android:windowLightStatusBar">false</item>
+
+        <!-- 自定义主题属性 - 暗色 -->
+        <item name="appBackground">@color/background</item>
+        <item name="appSurface">@color/surface</item>
+        <item name="appSurfaceLight">@color/surface_light</item>
+        <item name="appAccent">@color/primary</item>
+        <item name="appTextPrimary">@color/text_primary</item>
+        <item name="appTextSecondary">@color/text_secondary</item>
+        <item name="appDivider">@color/divider</item>
+        <item name="appCardBg">@color/card_bg</item>
     </style>
 
     <!-- iOS 风格浅色主题 -->
@@ -30,6 +40,16 @@
         <item name="android:statusBarColor">@color/light_surface</item>
         <item name="android:navigationBarColor">@color/light_background</item>
         <item name="android:windowLightStatusBar">true</item>
+
+        <!-- 自定义主题属性 - 浅色 -->
+        <item name="appBackground">@color/light_background</item>
+        <item name="appSurface">@color/light_surface</item>
+        <item name="appSurfaceLight">@color/light_divider</item>
+        <item name="appAccent">@color/light_primary</item>
+        <item name="appTextPrimary">@color/light_text_primary</item>
+        <item name="appTextSecondary">@color/light_text_secondary</item>
+        <item name="appDivider">@color/light_divider</item>
+        <item name="appCardBg">@color/light_card_bg</item>
     </style>
 
     <!-- 闹钟响铃全屏主题 -->

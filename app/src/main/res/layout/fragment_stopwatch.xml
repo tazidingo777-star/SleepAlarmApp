@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/background"
+    android:background="?attr/appBackground"
     android:gravity="center_horizontal"
     android:padding="24dp">
 
@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:text="00:00.00"
         android:textSize="64sp"
-        android:textColor="@color/text_primary"
+        android:textColor="?attr/appTextPrimary"
         android:fontFamily="sans-serif-thin"
         android:textStyle="bold" />
 
@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:text=""
             android:textSize="16sp"
-            android:textColor="@color/text_secondary"
+            android:textColor="?attr/appTextSecondary"
             android:fontFamily="monospace"
             android:gravity="center" />
     </ScrollView>
@@ -61,8 +61,9 @@
             app:icon="@drawable/ic_stop_square"
             app:iconSize="28dp"
             app:iconGravity="textTop"
-            app:cornerRadius="38dp"
-            app:strokeColor="@color/gray_light"
+            app:cornerRadius="12dp"
+            app:strokeColor="?attr/appDivider"
+            app:strokeWidth="1.5dp"
             android:layout_marginEnd="24dp" />
 
         <com.google.android.material.button.MaterialButton
@@ -77,8 +78,8 @@
             app:icon="@drawable/ic_play_triangle"
             app:iconSize="32dp"
             app:iconGravity="textTop"
-            app:cornerRadius="40dp"
-            app:backgroundTint="@color/primary"
+            app:cornerRadius="12dp"
+            app:backgroundTint="?attr/appAccent"
             style="@style/Widget.Material3.Button"
             android:layout_marginEnd="24dp" />
 
@@ -95,8 +96,9 @@
             app:icon="@drawable/ic_lap_flag"
             app:iconSize="28dp"
             app:iconGravity="textTop"
-            app:cornerRadius="38dp"
-            app:strokeColor="@color/gray_light" />
+            app:cornerRadius="12dp"
+            app:strokeColor="?attr/appDivider"
+            app:strokeWidth="1.5dp" />
     </LinearLayout>
 
     <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.1" />

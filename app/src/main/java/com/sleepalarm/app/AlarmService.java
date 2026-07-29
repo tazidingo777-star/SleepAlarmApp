@@ -27,8 +27,6 @@ import androidx.core.app.NotificationCompat;
 import com.sleepalarm.app.ui.AlarmAlertActivity;
 import com.sleepalarm.app.utils.AlarmManagerHelper;
 
-import android.app.PendingIntent;
-
 /**
  * 闹钟前台服务 - 实现渐响功能和闹钟界面展示
  */

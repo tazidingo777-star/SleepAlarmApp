@@ -3,6 +3,7 @@ package com.sleepalarm.app.ui;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,6 +27,8 @@ import com.sleepalarm.app.R;
 import com.sleepalarm.app.models.SleepSchedule;
 import com.sleepalarm.app.utils.AlarmManagerHelper;
 import com.sleepalarm.app.utils.PreferencesHelper;
+import com.sleepalarm.app.utils.PressFeedbackHelper;
+import com.sleepalarm.app.utils.ThemeColors;
 
 import java.util.List;
 
@@ -55,6 +58,9 @@ public class SleepScheduleFragment extends Fragment {
         switchEnabled = v.findViewById(R.id.switch_sleep_enabled);
         tvBedtime = v.findViewById(R.id.tv_bedtime);
         tvWakeTime = v.findViewById(R.id.tv_wake_time);
+
+        PressFeedbackHelper.apply(tvBedtime);
+        PressFeedbackHelper.apply(tvWakeTime);
 
         tempRingtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
         loadSchedule();
@@ -114,6 +120,7 @@ public class SleepScheduleFragment extends Fragment {
         });
 
         v.findViewById(R.id.btn_options).setOnClickListener(view -> {
+            PressFeedbackHelper.apply(v.findViewById(R.id.btn_options));
             showOptionsDialog();
         });
 
@@ -139,12 +146,15 @@ public class SleepScheduleFragment extends Fragment {
         LinearLayout root = new LinearLayout(requireContext());
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(40, 32, 40, 32);
-        root.setBackgroundColor(0xFF1C1C1E);
+        GradientDrawable rootBg = new GradientDrawable();
+        rootBg.setCornerRadius(dpToPx(16));
+        rootBg.setColor(ThemeColors.getSurface(requireContext()));
+        root.setBackground(rootBg);
 
         TextView tvTitle = new TextView(requireContext());
         tvTitle.setText(title);
-        tvTitle.setTextSize(20);
-        tvTitle.setTextColor(Color.WHITE);
+        tvTitle.setTextSize(24);
+        tvTitle.setTextColor(ThemeColors.getTextPrimary(requireContext()));
         tvTitle.setGravity(Gravity.CENTER);
         tvTitle.setPadding(0, 0, 0, 24);
         root.addView(tvTitle);
@@ -157,26 +167,32 @@ public class SleepScheduleFragment extends Fragment {
         EditText etHour = new EditText(requireContext());
         etHour.setText(String.format("%02d", initHour));
         etHour.setTextSize(36);
-        etHour.setTextColor(Color.WHITE);
+        etHour.setTextColor(ThemeColors.getTextPrimary(requireContext()));
         etHour.setGravity(Gravity.CENTER);
         etHour.setInputType(InputType.TYPE_CLASS_NUMBER);
-        etHour.setBackgroundColor(0xFF2C2C2E);
+        GradientDrawable etHourBg = new GradientDrawable();
+        etHourBg.setCornerRadius(dpToPx(12));
+        etHourBg.setColor(ThemeColors.getSurfaceLight(requireContext()));
+        etHour.setBackground(etHourBg);
         etHour.setPadding(24, 16, 24, 16);
         etHour.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
 
         TextView sep = new TextView(requireContext());
         sep.setText(":");
         sep.setTextSize(36);
-        sep.setTextColor(Color.WHITE);
+        sep.setTextColor(ThemeColors.getTextPrimary(requireContext()));
         sep.setPadding(16, 0, 16, 0);
 
         EditText etMinute = new EditText(requireContext());
         etMinute.setText(String.format("%02d", initMinute));
         etMinute.setTextSize(36);
-        etMinute.setTextColor(Color.WHITE);
+        etMinute.setTextColor(ThemeColors.getTextPrimary(requireContext()));
         etMinute.setGravity(Gravity.CENTER);
         etMinute.setInputType(InputType.TYPE_CLASS_NUMBER);
-        etMinute.setBackgroundColor(0xFF2C2C2E);
+        GradientDrawable etMinuteBg = new GradientDrawable();
+        etMinuteBg.setCornerRadius(dpToPx(12));
+        etMinuteBg.setColor(ThemeColors.getSurfaceLight(requireContext()));
+        etMinute.setBackground(etMinuteBg);
         etMinute.setPadding(24, 16, 24, 16);
         etMinute.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
 
@@ -194,15 +210,19 @@ public class SleepScheduleFragment extends Fragment {
         TextView btnCancel = new TextView(requireContext());
         btnCancel.setText("取消");
         btnCancel.setTextSize(16);
-        btnCancel.setTextColor(Color.parseColor("#8E8E93"));
-        btnCancel.setPadding(48, 14, 48, 14);
+        btnCancel.setTextColor(ThemeColors.getTextSecondary(requireContext()));
+        btnCancel.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+        btnCancel.setPadding(dpToPx(24), dpToPx(12), dpToPx(24), dpToPx(12));
+        PressFeedbackHelper.apply(btnCancel);
         btnCancel.setOnClickListener(v2 -> dialog.dismiss());
 
         TextView btnOK = new TextView(requireContext());
         btnOK.setText("确定");
         btnOK.setTextSize(16);
-        btnOK.setTextColor(Color.parseColor("#FF9500"));
-        btnOK.setPadding(48, 14, 48, 14);
+        btnOK.setTextColor(ThemeColors.getAccent(requireContext()));
+        btnOK.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+        btnOK.setPadding(dpToPx(24), dpToPx(12), dpToPx(24), dpToPx(12));
+        PressFeedbackHelper.apply(btnOK);
         btnOK.setOnClickListener(v2 -> {
             dialog.dismiss();
             try {
@@ -272,12 +292,15 @@ public class SleepScheduleFragment extends Fragment {
         LinearLayout root = new LinearLayout(requireContext());
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(0, 32, 0, 32);
-        root.setBackgroundColor(0xFF1C1C1E);
+        GradientDrawable rootBg2 = new GradientDrawable();
+        rootBg2.setCornerRadius(dpToPx(16));
+        rootBg2.setColor(ThemeColors.getSurface(requireContext()));
+        root.setBackground(rootBg2);
 
         TextView tvTitle = new TextView(requireContext());
         tvTitle.setText("就寝设置");
-        tvTitle.setTextSize(20);
-        tvTitle.setTextColor(Color.WHITE);
+        tvTitle.setTextSize(24);
+        tvTitle.setTextColor(ThemeColors.getTextPrimary(requireContext()));
         tvTitle.setGravity(Gravity.CENTER);
         tvTitle.setPadding(0, 0, 0, 16);
         root.addView(tvTitle);
@@ -291,9 +314,13 @@ public class SleepScheduleFragment extends Fragment {
         TextView tvRingtone = new TextView(requireContext());
         tvRingtone.setText("点击选择铃声");
         tvRingtone.setTextSize(16);
-        tvRingtone.setTextColor(Color.parseColor("#8E8E93"));
+        tvRingtone.setTextColor(ThemeColors.getTextSecondary(requireContext()));
         tvRingtone.setPadding(40, 14, 40, 14);
-        tvRingtone.setBackgroundColor(0xFF2C2C2E);
+        GradientDrawable ringtoneBg = new GradientDrawable();
+        ringtoneBg.setCornerRadius(dpToPx(12));
+        ringtoneBg.setColor(ThemeColors.getSurfaceLight(requireContext()));
+        tvRingtone.setBackground(ringtoneBg);
+        PressFeedbackHelper.apply(tvRingtone);
         tvRingtone.setOnClickListener(v -> {
             Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
             intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM);
@@ -313,12 +340,15 @@ public class SleepScheduleFragment extends Fragment {
         briefingRow.setOrientation(LinearLayout.HORIZONTAL);
         briefingRow.setGravity(Gravity.CENTER_VERTICAL);
         briefingRow.setPadding(40, 12, 40, 12);
-        briefingRow.setBackgroundColor(0xFF2C2C2E);
+        GradientDrawable briefingBg = new GradientDrawable();
+        briefingBg.setCornerRadius(dpToPx(12));
+        briefingBg.setColor(ThemeColors.getSurfaceLight(requireContext()));
+        briefingRow.setBackground(briefingBg);
 
         TextView tvBriefing = new TextView(requireContext());
         tvBriefing.setText("启用每日播报");
         tvBriefing.setTextSize(16);
-        tvBriefing.setTextColor(Color.WHITE);
+        tvBriefing.setTextColor(ThemeColors.getTextPrimary(requireContext()));
 
         MaterialSwitch swBriefing = new MaterialSwitch(requireContext());
         swBriefing.setChecked(prefsHelper.isBriefingEnabled());
@@ -335,8 +365,9 @@ public class SleepScheduleFragment extends Fragment {
         TextView tvViewBriefing = new TextView(requireContext());
         tvViewBriefing.setText("查看每日播报 >");
         tvViewBriefing.setTextSize(16);
-        tvViewBriefing.setTextColor(Color.parseColor("#FF9500"));
+        tvViewBriefing.setTextColor(ThemeColors.getAccent(requireContext()));
         tvViewBriefing.setPadding(40, 14, 40, 14);
+        PressFeedbackHelper.apply(tvViewBriefing);
         tvViewBriefing.setOnClickListener(v -> {
             dialog.dismiss();
             startActivity(new Intent(requireContext(), DailyBriefingActivity.class));
@@ -347,9 +378,11 @@ public class SleepScheduleFragment extends Fragment {
         TextView btnClose = new TextView(requireContext());
         btnClose.setText("关闭");
         btnClose.setTextSize(16);
-        btnClose.setTextColor(Color.parseColor("#FF9500"));
+        btnClose.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+        btnClose.setTextColor(ThemeColors.getAccent(requireContext()));
         btnClose.setGravity(Gravity.CENTER);
-        btnClose.setPadding(40, 24, 40, 8);
+        btnClose.setPadding(dpToPx(24), dpToPx(12), dpToPx(24), dpToPx(12));
+        PressFeedbackHelper.apply(btnClose);
         btnClose.setOnClickListener(v -> dialog.dismiss());
         root.addView(btnClose);
 
@@ -375,22 +408,29 @@ public class SleepScheduleFragment extends Fragment {
             dayView.setPadding(6, 8, 6, 8);
             dayView.setGravity(Gravity.CENTER);
             dayView.setMinWidth(36);
+            GradientDrawable dayBg = new GradientDrawable();
+            dayBg.setCornerRadius(dpToPx(8));
             if (selected[idx]) {
-                dayView.setTextColor(Color.BLACK);
-                dayView.setBackgroundColor(Color.parseColor("#FF9500"));
+                dayView.setTextColor(ThemeColors.getOnAccent(requireContext()));
+                dayBg.setColor(ThemeColors.getAccent(requireContext()));
             } else {
-                dayView.setTextColor(Color.parseColor("#8E8E93"));
-                dayView.setBackgroundColor(0xFF2C2C2E);
+                dayView.setTextColor(ThemeColors.getTextSecondary(requireContext()));
+                dayBg.setColor(ThemeColors.getSurfaceLight(requireContext()));
             }
+            dayView.setBackground(dayBg);
+            PressFeedbackHelper.apply(dayView);
             dayView.setOnClickListener(v2 -> {
                 selected[idx] = !selected[idx];
+                GradientDrawable ddBg = new GradientDrawable();
+                ddBg.setCornerRadius(dpToPx(8));
                 if (selected[idx]) {
-                    dayView.setTextColor(Color.BLACK);
-                    dayView.setBackgroundColor(Color.parseColor("#FF9500"));
+                    dayView.setTextColor(ThemeColors.getOnAccent(requireContext()));
+                    ddBg.setColor(ThemeColors.getAccent(requireContext()));
                 } else {
-                    dayView.setTextColor(Color.parseColor("#8E8E93"));
-                    dayView.setBackgroundColor(0xFF2C2C2E);
+                    dayView.setTextColor(ThemeColors.getTextSecondary(requireContext()));
+                    ddBg.setColor(ThemeColors.getSurfaceLight(requireContext()));
                 }
+                dayView.setBackground(ddBg);
             });
 
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
@@ -404,10 +444,12 @@ public class SleepScheduleFragment extends Fragment {
         // OK button for repeat
         TextView btnOK = new TextView(requireContext());
         btnOK.setText("确定");
-        btnOK.setTextSize(14);
-        btnOK.setTextColor(Color.parseColor("#FF9500"));
+        btnOK.setTextSize(16);
+        btnOK.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
+        btnOK.setTextColor(ThemeColors.getAccent(requireContext()));
         btnOK.setGravity(Gravity.CENTER);
-        btnOK.setPadding(0, 8, 0, 0);
+        btnOK.setPadding(dpToPx(24), dpToPx(12), dpToPx(24), dpToPx(12));
+        PressFeedbackHelper.apply(btnOK);
         btnOK.setOnClickListener(v -> {
             schedule.setRepeatDays(selected);
             saveSchedule();
@@ -435,26 +477,35 @@ public class SleepScheduleFragment extends Fragment {
             tv.setPadding(6, 8, 6, 8);
             tv.setGravity(Gravity.CENTER);
             tv.setMinWidth(42);
+            GradientDrawable gradBg = new GradientDrawable();
+            gradBg.setCornerRadius(dpToPx(8));
             if (val == schedule.getGradualMinutes()) {
-                tv.setTextColor(Color.BLACK);
-                tv.setBackgroundColor(Color.parseColor("#FF9500"));
+                tv.setTextColor(ThemeColors.getOnAccent(requireContext()));
+                gradBg.setColor(ThemeColors.getAccent(requireContext()));
             } else {
-                tv.setTextColor(Color.parseColor("#8E8E93"));
-                tv.setBackgroundColor(0xFF2C2C2E);
+                tv.setTextColor(ThemeColors.getTextSecondary(requireContext()));
+                gradBg.setColor(ThemeColors.getSurfaceLight(requireContext()));
             }
+            tv.setBackground(gradBg);
+            PressFeedbackHelper.apply(tv);
             tv.setOnClickListener(v2 -> {
                 schedule.setGradualMinutes(val);
                 saveSchedule();
-                // update all styles
                 for (int j = 0; j < gradualRow.getChildCount(); j++) {
                     View child = gradualRow.getChildAt(j);
                     if (child instanceof TextView) {
-                        ((TextView) child).setTextColor(Color.parseColor("#8E8E93"));
-                        child.setBackgroundColor(0xFF2C2C2E);
+                        ((TextView) child).setTextColor(ThemeColors.getTextSecondary(requireContext()));
+                        GradientDrawable resetBg = new GradientDrawable();
+                        resetBg.setCornerRadius(dpToPx(8));
+                        resetBg.setColor(ThemeColors.getSurfaceLight(requireContext()));
+                        child.setBackground(resetBg);
                     }
                 }
-                tv.setTextColor(Color.BLACK);
-                tv.setBackgroundColor(Color.parseColor("#FF9500"));
+                tv.setTextColor(ThemeColors.getOnAccent(requireContext()));
+                GradientDrawable selBg = new GradientDrawable();
+                selBg.setCornerRadius(dpToPx(8));
+                selBg.setColor(ThemeColors.getAccent(requireContext()));
+                tv.setBackground(selBg);
             });
 
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
@@ -470,7 +521,7 @@ public class SleepScheduleFragment extends Fragment {
         TextView tv = new TextView(requireContext());
         tv.setText(text);
         tv.setTextSize(14);
-        tv.setTextColor(Color.parseColor("#8E8E93"));
+        tv.setTextColor(ThemeColors.getTextSecondary(requireContext()));
         tv.setPadding(40, 20, 40, 8);
         root.addView(tv);
     }
@@ -484,5 +535,9 @@ public class SleepScheduleFragment extends Fragment {
                 tempRingtoneUri = uri;
             }
         }
+    }
+
+    private int dpToPx(int dp) {
+        return (int) (dp * requireContext().getResources().getDisplayMetrics().density);
     }
 }

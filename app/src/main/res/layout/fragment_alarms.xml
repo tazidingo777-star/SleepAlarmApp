@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="?attr/appBackground">
 
     <!-- 空状态提示 -->
     <LinearLayout
@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:text="还没有闹钟"
             android:textSize="18sp"
-            android:textColor="@color/text_secondary"
+            android:textColor="?attr/appTextSecondary"
             android:layout_marginBottom="24dp" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton

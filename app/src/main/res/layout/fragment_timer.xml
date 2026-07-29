@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/background"
+    android:background="?attr/appBackground"
     android:gravity="center_horizontal"
     android:padding="16dp">
 
@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:text="00:00:00"
         android:textSize="48sp"
-        android:textColor="@color/primary"
+        android:textColor="?attr/appAccent"
         android:fontFamily="sans-serif-thin"
         android:textStyle="bold"
         android:visibility="gone" />
@@ -44,7 +44,7 @@
                 android:layout_height="wrap_content"
                 android:text="00"
                 android:textSize="28sp"
-                android:textColor="@color/text_primary"
+                android:textColor="?attr/appTextPrimary"
                 android:gravity="center"
                 android:clickable="true"
                 android:focusable="true"
@@ -63,7 +63,7 @@
             android:layout_height="wrap_content"
             android:text=":"
             android:textSize="36sp"
-            android:textColor="@color/primary"
+            android:textColor="?attr/appAccent"
             android:gravity="center"
             android:layout_marginBottom="30dp" />
 
@@ -79,7 +79,7 @@
                 android:layout_height="wrap_content"
                 android:text="00"
                 android:textSize="28sp"
-                android:textColor="@color/text_primary"
+                android:textColor="?attr/appTextPrimary"
                 android:gravity="center"
                 android:clickable="true"
                 android:focusable="true"
@@ -98,7 +98,7 @@
             android:layout_height="wrap_content"
             android:text=":"
             android:textSize="36sp"
-            android:textColor="@color/primary"
+            android:textColor="?attr/appAccent"
             android:gravity="center"
             android:layout_marginBottom="30dp" />
 
@@ -114,7 +114,7 @@
                 android:layout_height="wrap_content"
                 android:text="00"
                 android:textSize="28sp"
-                android:textColor="@color/text_primary"
+                android:textColor="?attr/appTextPrimary"
                 android:gravity="center"
                 android:clickable="true"
                 android:focusable="true"
@@ -151,9 +151,10 @@
             app:icon="@drawable/ic_stop_square"
             app:iconSize="28dp"
             app:iconGravity="textTop"
-            app:cornerRadius="38dp"
-            app:strokeColor="@color/gray_light"
-            android:layout_marginEnd="20dp" />
+            app:cornerRadius="12dp"
+            app:strokeColor="?attr/appDivider"
+            android:layout_marginEnd="20dp"
+            app:strokeWidth="1.5dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_timer_start"
@@ -167,8 +168,8 @@
             app:icon="@drawable/ic_play_triangle"
             app:iconSize="32dp"
             app:iconGravity="textTop"
-            app:cornerRadius="40dp"
-            app:backgroundTint="@color/primary"
+            app:cornerRadius="12dp"
+            app:backgroundTint="?attr/appAccent"
             style="@style/Widget.Material3.Button" />
     </LinearLayout>
 

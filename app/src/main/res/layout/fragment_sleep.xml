@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FF000000">
+    android:background="?attr/appBackground">
 
     <!-- 顶部导航栏：选项 | 就寝 | 开关 -->
     <RelativeLayout
@@ -20,7 +20,7 @@
             android:layout_centerVertical="true"
             android:text="选项"
             android:textSize="17sp"
-            android:textColor="#FFFF9500" />
+            android:textColor="?attr/appAccent" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -28,7 +28,7 @@
             android:layout_centerInParent="true"
             android:text="就寝"
             android:textSize="18sp"
-            android:textColor="#FFFFFFFF"
+            android:textColor="?attr/appTextPrimary"
             android:textStyle="bold" />
 
         <com.google.android.material.materialswitch.MaterialSwitch
@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            app:thumbTint="#FFFFFFFF"
+            app:thumbTint="?attr/appTextPrimary"
             app:trackTint="@color/ios_switch_track" />
     </RelativeLayout>
 
@@ -63,7 +63,7 @@
                 android:layout_height="wrap_content"
                 android:text="🌙 就寝"
                 android:textSize="15sp"
-                android:textColor="#FFFF9500" />
+                android:textColor="?attr/appAccent" />
 
             <TextView
                 android:id="@+id/tv_bedtime"
@@ -72,7 +72,7 @@
                 android:layout_marginTop="4dp"
                 android:text="23:00"
                 android:textSize="40sp"
-                android:textColor="#FFFFFFFF"
+                android:textColor="?attr/appTextPrimary"
                 android:fontFamily="sans-serif-thin"
                 android:clickable="true"
                 android:focusable="true"
@@ -91,7 +91,7 @@
                 android:layout_height="wrap_content"
                 android:text="🔔 起床"
                 android:textSize="15sp"
-                android:textColor="#FFFF9500" />
+                android:textColor="?attr/appAccent" />
 
             <TextView
                 android:id="@+id/tv_wake_time"
@@ -100,7 +100,7 @@
                 android:layout_marginTop="4dp"
                 android:text="06:00"
                 android:textSize="40sp"
-                android:textColor="#FFFFFFFF"
+                android:textColor="?attr/appTextPrimary"
                 android:fontFamily="sans-serif-thin"
                 android:clickable="true"
                 android:focusable="true"
