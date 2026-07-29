@@ -12,6 +12,8 @@ import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 
+import com.sleepalarm.app.utils.ViewUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -141,7 +143,7 @@ public class TimerFragment extends Fragment {
         picker.setValue(initial);
         picker.setFormatter(i -> String.format("%02d", i));
         picker.setTextColor(Color.WHITE);
-        picker.setDividerColor(Color.parseColor("#FF9500"));
+        ViewUtils.setNumberPickerDividerColor(picker, Color.parseColor("#FF9500"));
         root.addView(picker);
 
         LinearLayout btnRow = new LinearLayout(requireContext());

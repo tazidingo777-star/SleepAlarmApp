@@ -12,6 +12,8 @@ import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.sleepalarm.app.utils.ViewUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -120,7 +122,7 @@ public class AlarmsFragment extends Fragment {
         hourPicker.setValue(initialHour);
         hourPicker.setFormatter(i -> String.format("%02d", i));
         hourPicker.setTextColor(Color.WHITE);
-        hourPicker.setDividerColor(Color.parseColor("#FF9500"));
+        ViewUtils.setNumberPickerDividerColor(hourPicker, Color.parseColor("#FF9500"));
 
         TextView sep = new TextView(requireContext());
         sep.setText(":");
@@ -134,7 +136,7 @@ public class AlarmsFragment extends Fragment {
         minutePicker.setValue(initialMinute);
         minutePicker.setFormatter(i -> String.format("%02d", i));
         minutePicker.setTextColor(Color.WHITE);
-        minutePicker.setDividerColor(Color.parseColor("#FF9500"));
+        ViewUtils.setNumberPickerDividerColor(minutePicker, Color.parseColor("#FF9500"));
 
         pickerRow.addView(hourPicker);
         pickerRow.addView(sep);
