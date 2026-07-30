@@ -24,41 +24,30 @@
             android:textColor="?attr/appTextPrimary"
             android:textStyle="bold" />
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+        <!-- 设置按钮 -->
+        <TextView
+            android:id="@+id/btn_settings"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="⚙"
+            android:textSize="22sp"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginEnd="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🔔"
-                android:textSize="16sp"
-                android:layout_marginEnd="4dp" />
-
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/switch_lock_notify"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:scaleX="0.8"
-                android:scaleY="0.8" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🌙"
-                android:textSize="16sp"
-                android:layout_marginEnd="4dp" />
-
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/switch_theme"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:scaleX="0.8"
-                android:scaleY="0.8" />
-        </LinearLayout>
+        <!-- 深色/浅色主题切换（点击月亮/太阳图标） -->
+        <TextView
+            android:id="@+id/btn_theme_toggle"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="🌙"
+            android:textSize="22sp"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless" />
     </LinearLayout>
 
     <FrameLayout

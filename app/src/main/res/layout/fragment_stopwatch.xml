@@ -18,7 +18,6 @@
         android:text="00:00.00"
         android:textSize="64sp"
         android:textColor="?attr/appTextPrimary"
-        android:fontFamily="sans-serif-thin"
         android:textStyle="bold" />
 
     <View android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.15" />
@@ -35,8 +34,6 @@
             android:layout_height="wrap_content"
             android:text=""
             android:textSize="16sp"
-            android:textColor="?attr/appTextSecondary"
-            android:fontFamily="monospace"
             android:gravity="center" />
     </ScrollView>
 

@@ -33,8 +33,7 @@
         android:textSize="80sp"
         android:textColor="#FFFFFF"
         android:textStyle="bold"
-        android:layout_marginTop="8dp"
-        android:fontFamily="sans-serif-thin" />
+        android:layout_marginTop="8dp" />
 
     <!-- 副标题 -->
     <TextView

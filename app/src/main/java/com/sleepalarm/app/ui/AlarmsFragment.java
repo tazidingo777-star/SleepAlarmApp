@@ -3,7 +3,6 @@ package com.sleepalarm.app.ui;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -381,7 +380,6 @@ public class AlarmsFragment extends Fragment {
         TextView btnCancel = new TextView(requireContext());
         btnCancel.setText("取消");
         btnCancel.setTextSize(16);
-        btnCancel.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         btnCancel.setTextColor(ThemeColors.getTextSecondary(requireContext()));
         btnCancel.setPadding(48, 0, 48, 0);
         btnCancel.setHeight(dpToPx(48));
@@ -396,7 +394,6 @@ public class AlarmsFragment extends Fragment {
         TextView btnSave = new TextView(requireContext());
         btnSave.setText("保存");
         btnSave.setTextSize(16);
-        btnSave.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         btnSave.setTextColor(ThemeColors.getOnAccent(requireContext()));
         btnSave.setPadding(48, 0, 48, 0);
         btnSave.setHeight(dpToPx(48));
@@ -432,7 +429,6 @@ public class AlarmsFragment extends Fragment {
             TextView btnDelete = new TextView(requireContext());
             btnDelete.setText("删除");
             btnDelete.setTextSize(16);
-            btnDelete.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
             btnDelete.setTextColor(Color.parseColor("#FF3B30"));
             btnDelete.setPadding(48, 0, 48, 0);
             btnDelete.setHeight(dpToPx(48));

@@ -4,13 +4,17 @@ import android.Manifest;
 import android.app.AlarmManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.Gravity;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -24,6 +28,7 @@ import com.sleepalarm.app.ui.StopwatchFragment;
 import com.sleepalarm.app.ui.TimerFragment;
 import com.sleepalarm.app.utils.AlarmManagerHelper;
 import com.sleepalarm.app.utils.PreferencesHelper;
+import com.sleepalarm.app.utils.ThemeColors;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -47,20 +52,17 @@ public class MainActivity extends AppCompatActivity {
                 new ActivityResultContracts.RequestPermission(),
                 granted -> { /* 权限结果处理 */ });
 
-        // 主题切换开关
-        MaterialSwitch switchTheme = findViewById(R.id.switch_theme);
-        switchTheme.setChecked(prefsHelper.isDarkTheme());
-        switchTheme.setOnCheckedChangeListener((btn, checked) -> {
-            prefsHelper.setDarkTheme(checked);
+        // 深色/浅色主题切换（点击月亮/太阳图标）
+        TextView btnTheme = findViewById(R.id.btn_theme_toggle);
+        btnTheme.setText(prefsHelper.isDarkTheme() ? "🌙" : "☀");
+        btnTheme.setOnClickListener(v -> {
+            boolean isDark = prefsHelper.isDarkTheme();
+            prefsHelper.setDarkTheme(!isDark);
             recreate();
         });
 
-        // 锁屏通知开关
-        MaterialSwitch switchLockNotify = findViewById(R.id.switch_lock_notify);
-        switchLockNotify.setChecked(prefsHelper.isLockScreenNotifyEnabled());
-        switchLockNotify.setOnCheckedChangeListener((btn, checked) -> {
-            prefsHelper.setLockScreenNotifyEnabled(checked);
-        });
+        // 设置按钮（锁屏通知等）
+        findViewById(R.id.btn_settings).setOnClickListener(v -> showSettingsDialog());
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
 
@@ -131,5 +133,67 @@ public class MainActivity extends AppCompatActivity {
             alertIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(alertIntent);
         }
+    }
+
+    private void showSettingsDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        int pad = dpToPx(20);
+        root.setPadding(pad, pad, pad, pad);
+
+        TextView tvTitle = new TextView(this);
+        tvTitle.setText("设置");
+        tvTitle.setTextSize(20);
+        tvTitle.setTextColor(ThemeColors.getTextPrimary(this));
+        tvTitle.setPadding(0, 0, 0, dpToPx(12));
+        root.addView(tvTitle);
+
+        // 锁屏通知开关行
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setPadding(dpToPx(12), dpToPx(10), dpToPx(12), dpToPx(10));
+        GradientDrawable rowBg = new GradientDrawable();
+        rowBg.setCornerRadius(dpToPx(12));
+        rowBg.setColor(ThemeColors.getSurfaceLight(this));
+        row.setBackground(rowBg);
+
+        LinearLayout textCol = new LinearLayout(this);
+        textCol.setOrientation(LinearLayout.VERTICAL);
+
+        TextView tvLabel = new TextView(this);
+        tvLabel.setText("锁屏通知");
+        tvLabel.setTextSize(16);
+        tvLabel.setTextColor(ThemeColors.getTextPrimary(this));
+        textCol.addView(tvLabel);
+
+        TextView tvDesc = new TextView(this);
+        tvDesc.setText("闹钟响铃时在锁屏显示");
+        tvDesc.setTextSize(13);
+        tvDesc.setTextColor(ThemeColors.getTextSecondary(this));
+        textCol.addView(tvDesc);
+
+        MaterialSwitch sw = new MaterialSwitch(this);
+        sw.setChecked(prefsHelper.isLockScreenNotifyEnabled());
+        sw.setOnCheckedChangeListener((btn, checked) -> prefsHelper.setLockScreenNotifyEnabled(checked));
+
+        row.addView(textCol, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        row.addView(sw);
+        root.addView(row);
+
+        builder.setView(root);
+        builder.setPositiveButton("关闭", (d, w) -> d.dismiss());
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // 对话框内文字颜色跟随主题
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                .setTextColor(ThemeColors.getAccent(this));
+    }
+
+    private int dpToPx(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density);
     }
 }

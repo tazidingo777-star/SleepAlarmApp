@@ -3,7 +3,6 @@
     <!-- 底部导航 -->
     <style name="BottomNavText" parent="TextAppearance.Material3.LabelSmall">
         <item name="android:textSize">11sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 
     <!-- NumberPicker 分隔线颜色 -->
@@ -17,15 +16,12 @@
     <!-- 文字层级 -->
     <style name="TextTitle">
         <item name="android:textSize">24sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
     </style>
     <style name="TextBody">
         <item name="android:textSize">16sp</item>
-        <item name="android:fontFamily">sans-serif</item>
     </style>
     <style name="TextCaption">
         <item name="android:textSize">14sp</item>
-        <item name="android:fontFamily">sans-serif</item>
     </style>
 
     <!-- 卡片 -->
@@ -37,7 +33,6 @@
     <style name="ButtonFilled" parent="Widget.Material3.Button">
         <item name="android:minHeight">48dp</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
         <item name="cornerRadius">12dp</item>
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
@@ -47,7 +42,6 @@
     <style name="ButtonOutlined" parent="Widget.Material3.Button.OutlinedButton">
         <item name="android:minHeight">48dp</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
         <item name="cornerRadius">12dp</item>
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>

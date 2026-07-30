@@ -18,7 +18,6 @@
         android:text="00:00:00"
         android:textSize="48sp"
         android:textColor="?attr/appAccent"
-        android:fontFamily="sans-serif-thin"
         android:textStyle="bold"
         android:visibility="gone" />
 

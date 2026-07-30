@@ -174,7 +174,6 @@ public class TimerFragment extends Fragment {
         TextView btnCancel = new TextView(requireContext());
         btnCancel.setText("取消");
         btnCancel.setTextSize(16);
-        btnCancel.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
         btnCancel.setTextColor(ThemeColors.getTextSecondary(requireContext()));
         btnCancel.setPadding(48, 12, 48, 12);
         PressFeedbackHelper.apply(btnCancel);
@@ -183,7 +182,6 @@ public class TimerFragment extends Fragment {
         TextView btnOK = new TextView(requireContext());
         btnOK.setText("确定");
         btnOK.setTextSize(16);
-        btnOK.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
         btnOK.setTextColor(ThemeColors.getAccent(requireContext()));
         btnOK.setPadding(48, 12, 48, 12);
         PressFeedbackHelper.apply(btnOK);

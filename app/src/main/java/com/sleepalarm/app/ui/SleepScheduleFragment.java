@@ -211,7 +211,6 @@ public class SleepScheduleFragment extends Fragment {
         btnCancel.setText("取消");
         btnCancel.setTextSize(16);
         btnCancel.setTextColor(ThemeColors.getTextSecondary(requireContext()));
-        btnCancel.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
         btnCancel.setPadding(dpToPx(24), dpToPx(12), dpToPx(24), dpToPx(12));
         PressFeedbackHelper.apply(btnCancel);
         btnCancel.setOnClickListener(v2 -> dialog.dismiss());
@@ -220,7 +219,6 @@ public class SleepScheduleFragment extends Fragment {
         btnOK.setText("确定");
         btnOK.setTextSize(16);
         btnOK.setTextColor(ThemeColors.getAccent(requireContext()));
-        btnOK.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
         btnOK.setPadding(dpToPx(24), dpToPx(12), dpToPx(24), dpToPx(12));
         PressFeedbackHelper.apply(btnOK);
         btnOK.setOnClickListener(v2 -> {
@@ -378,7 +376,6 @@ public class SleepScheduleFragment extends Fragment {
         TextView btnClose = new TextView(requireContext());
         btnClose.setText("关闭");
         btnClose.setTextSize(16);
-        btnClose.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
         btnClose.setTextColor(ThemeColors.getAccent(requireContext()));
         btnClose.setGravity(Gravity.CENTER);
         btnClose.setPadding(dpToPx(24), dpToPx(12), dpToPx(24), dpToPx(12));
@@ -445,7 +442,6 @@ public class SleepScheduleFragment extends Fragment {
         TextView btnOK = new TextView(requireContext());
         btnOK.setText("确定");
         btnOK.setTextSize(16);
-        btnOK.setTypeface(android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL));
         btnOK.setTextColor(ThemeColors.getAccent(requireContext()));
         btnOK.setGravity(Gravity.CENTER);
         btnOK.setPadding(dpToPx(24), dpToPx(12), dpToPx(24), dpToPx(12));
