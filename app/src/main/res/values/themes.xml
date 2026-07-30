@@ -24,6 +24,7 @@
         <item name="appTextSecondary">@color/text_secondary</item>
         <item name="appDivider">@color/divider</item>
         <item name="appCardBg">@color/card_bg</item>
+        <item name="appOnAccent">@color/black</item>
     </style>
 
     <!-- iOS 风格浅色主题 -->
@@ -50,6 +51,7 @@
         <item name="appTextSecondary">@color/light_text_secondary</item>
         <item name="appDivider">@color/light_divider</item>
         <item name="appCardBg">@color/light_card_bg</item>
+        <item name="appOnAccent">@color/white</item>
     </style>
 
     <!-- 闹钟响铃全屏主题 -->

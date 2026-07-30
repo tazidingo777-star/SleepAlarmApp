@@ -8,4 +8,5 @@
     <attr name="appTextSecondary" format="color" />
     <attr name="appDivider" format="color" />
     <attr name="appCardBg" format="color" />
+    <attr name="appOnAccent" format="color" />
 </resources>
