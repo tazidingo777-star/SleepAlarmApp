@@ -168,8 +168,15 @@ public class PreferencesHelper {
         o.put("minute", a.getMinute());
         o.put("enabled", a.isEnabled());
         o.put("label", a.getLabel());
+        o.put("name", a.getName());
         o.put("gradualMinutes", a.getGradualMinutes());
         o.put("vibrate", a.isVibrate());
+        o.put("ringtoneUri", a.getRingtoneUri());
+        o.put("ringtoneName", a.getRingtoneName());
+        o.put("vibrateMode", a.getVibrateMode());
+        o.put("snoozeInterval", a.getSnoozeInterval());
+        o.put("snoozeCount", a.getSnoozeCount());
+        o.put("holidaySkip", a.isHolidaySkip());
         JSONArray days = new JSONArray();
         for (boolean d : a.getRepeatDays()) days.put(d);
         o.put("repeatDays", days);
@@ -182,12 +189,20 @@ public class PreferencesHelper {
         int minute = o.getInt("minute");
         boolean enabled = o.getBoolean("enabled");
         String label = o.optString("label", "闹钟");
+        String name = o.optString("name", "");
         int gm = o.optInt("gradualMinutes", 5);
         boolean vib = o.optBoolean("vibrate", true);
+        String ringtoneUri = o.optString("ringtoneUri", "");
+        String ringtoneName = o.optString("ringtoneName", "默认铃声");
+        String vibrateMode = o.optString("vibrateMode", "默认振动");
+        int snoozeInterval = o.optInt("snoozeInterval", 5);
+        int snoozeCount = o.optInt("snoozeCount", 3);
+        boolean holidaySkip = o.optBoolean("holidaySkip", false);
         boolean[] days = new boolean[7];
         JSONArray arr = o.getJSONArray("repeatDays");
         for (int i = 0; i < arr.length() && i < 7; i++) days[i] = arr.getBoolean(i);
-        return new Alarm(id, hour, minute, enabled, days, label, gm, vib);
+        return new Alarm(id, hour, minute, enabled, days, label, name, gm, vib,
+                ringtoneUri, ringtoneName, vibrateMode, snoozeInterval, snoozeCount, holidaySkip);
     }
 
     private JSONObject scheduleToJson(SleepSchedule s) throws Exception {

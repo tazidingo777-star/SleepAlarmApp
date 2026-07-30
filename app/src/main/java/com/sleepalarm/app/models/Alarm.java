@@ -9,9 +9,16 @@ public class Alarm {
     private int minute;
     private boolean enabled;
     private boolean[] repeatDays; // 0=周日...6=周六
-    private String label;
+    private String label;         // 顶部显示的时间标签/旧字段
+    private String name;          // 闹钟名称
     private int gradualMinutes;   // 渐响时长(分钟)，默认5
     private boolean vibrate;
+    private String ringtoneUri;   // 铃声 URI
+    private String ringtoneName;  // 铃声显示名称
+    private String vibrateMode;   // 振动模式显示名称
+    private int snoozeInterval;   // 稍后提醒间隔（分钟）
+    private int snoozeCount;      // 稍后提醒次数
+    private boolean holidaySkip;  // 法定节假日不响铃
 
     public Alarm() {
         this.id = System.currentTimeMillis();
@@ -20,20 +27,36 @@ public class Alarm {
         this.enabled = true;
         this.repeatDays = new boolean[]{false, false, false, false, false, false, false};
         this.label = "闹钟";
+        this.name = "";
         this.gradualMinutes = 5;
         this.vibrate = true;
+        this.ringtoneUri = "";
+        this.ringtoneName = "默认铃声";
+        this.vibrateMode = "默认振动";
+        this.snoozeInterval = 5;
+        this.snoozeCount = 3;
+        this.holidaySkip = false;
     }
 
     public Alarm(long id, int hour, int minute, boolean enabled, boolean[] repeatDays,
-                 String label, int gradualMinutes, boolean vibrate) {
+                 String label, String name, int gradualMinutes, boolean vibrate,
+                 String ringtoneUri, String ringtoneName, String vibrateMode,
+                 int snoozeInterval, int snoozeCount, boolean holidaySkip) {
         this.id = id;
         this.hour = hour;
         this.minute = minute;
         this.enabled = enabled;
         this.repeatDays = repeatDays;
         this.label = label;
+        this.name = name;
         this.gradualMinutes = gradualMinutes;
         this.vibrate = vibrate;
+        this.ringtoneUri = ringtoneUri;
+        this.ringtoneName = ringtoneName;
+        this.vibrateMode = vibrateMode;
+        this.snoozeInterval = snoozeInterval;
+        this.snoozeCount = snoozeCount;
+        this.holidaySkip = holidaySkip;
     }
 
     public long getId() { return id; }
@@ -54,11 +77,32 @@ public class Alarm {
     public String getLabel() { return label; }
     public void setLabel(String label) { this.label = label; }
 
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
     public int getGradualMinutes() { return gradualMinutes; }
     public void setGradualMinutes(int gradualMinutes) { this.gradualMinutes = gradualMinutes; }
 
     public boolean isVibrate() { return vibrate; }
     public void setVibrate(boolean vibrate) { this.vibrate = vibrate; }
+
+    public String getRingtoneUri() { return ringtoneUri; }
+    public void setRingtoneUri(String ringtoneUri) { this.ringtoneUri = ringtoneUri; }
+
+    public String getRingtoneName() { return ringtoneName; }
+    public void setRingtoneName(String ringtoneName) { this.ringtoneName = ringtoneName; }
+
+    public String getVibrateMode() { return vibrateMode; }
+    public void setVibrateMode(String vibrateMode) { this.vibrateMode = vibrateMode; }
+
+    public int getSnoozeInterval() { return snoozeInterval; }
+    public void setSnoozeInterval(int snoozeInterval) { this.snoozeInterval = snoozeInterval; }
+
+    public int getSnoozeCount() { return snoozeCount; }
+    public void setSnoozeCount(int snoozeCount) { this.snoozeCount = snoozeCount; }
+
+    public boolean isHolidaySkip() { return holidaySkip; }
+    public void setHolidaySkip(boolean holidaySkip) { this.holidaySkip = holidaySkip; }
 
     public String getTimeText() {
         return String.format("%02d:%02d", hour, minute);

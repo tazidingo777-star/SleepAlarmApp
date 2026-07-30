@@ -119,7 +119,7 @@ public class TimerFragment extends Fragment {
         picker.setMaxValue(max);
         picker.setValue(value);
         picker.setFormatter(i -> String.format("%02d", i));
-        picker.setTextColor(ThemeColors.getTextPrimary(requireContext()));
+        ViewUtils.setNumberPickerTextColor(picker, ThemeColors.getTextPrimary(requireContext()));
         ViewUtils.setNumberPickerDividerColor(picker, ThemeColors.getAccent(requireContext()));
     }
 
