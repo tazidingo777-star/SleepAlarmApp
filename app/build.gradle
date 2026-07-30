@@ -32,9 +32,6 @@ android {
     }
 
     buildTypes {
-        debug {
-            signingConfig signingConfigs.sleepAlarm
-        }
         release {
             minifyEnabled false
             signingConfig signingConfigs.sleepAlarm
