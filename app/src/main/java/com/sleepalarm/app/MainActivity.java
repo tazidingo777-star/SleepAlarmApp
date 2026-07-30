@@ -225,16 +225,16 @@ public class MainActivity extends AppCompatActivity {
         tvViewBriefing.setTextSize(16);
         tvViewBriefing.setTextColor(ThemeColors.getAccent(this));
         tvViewBriefing.setPadding(dpToPx(12), dpToPx(14), dpToPx(12), dpToPx(14));
-        tvViewBriefing.setOnClickListener(v -> {
-            dialog.dismiss();
-            startActivity(new Intent(this, com.sleepalarm.app.ui.DailyBriefingActivity.class));
-        });
         root.addView(tvViewBriefing);
 
         builder.setView(root);
         builder.setPositiveButton("关闭", (d, w) -> d.dismiss());
 
         AlertDialog dialog = builder.create();
+        tvViewBriefing.setOnClickListener(v -> {
+            dialog.dismiss();
+            startActivity(new Intent(this, com.sleepalarm.app.ui.DailyBriefingActivity.class));
+        });
         dialog.show();
 
         // 对话框内文字颜色跟随主题
