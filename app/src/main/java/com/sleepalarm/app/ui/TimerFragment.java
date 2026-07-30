@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
@@ -24,7 +25,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.material.button.MaterialButton;
 import com.sleepalarm.app.R;
 
 import java.util.Locale;
@@ -34,7 +34,7 @@ public class TimerFragment extends Fragment {
     private TextView tvTimerDisplay, tvHours, tvMinutes, tvSeconds;
     private NumberPicker npHours, npMinutes, npSeconds;
     private View layoutWheels;
-    private MaterialButton btnStart, btnStop;
+    private ImageButton btnStart, btnStop;
 
     private long totalSeconds = 0;
     private CountDownTimer countDownTimer;
@@ -238,7 +238,7 @@ public class TimerFragment extends Fragment {
         if (isPaused) {
             isPaused = false;
             isRunning = true;
-            btnStart.setIconResource(R.drawable.ic_pause);
+            btnStart.setImageResource(R.drawable.ic_pause);
             btnStop.setEnabled(true);
 
             countDownTimer = new CountDownTimer(totalSeconds * 1000, 100) {
@@ -252,7 +252,7 @@ public class TimerFragment extends Fragment {
                     totalSeconds = 0;
                     isRunning = false;
                     isPaused = false;
-                    btnStart.setIconResource(R.drawable.ic_play_triangle);
+                    btnStart.setImageResource(R.drawable.ic_play_triangle);
                     btnStop.setEnabled(false);
                     updateDisplay();
                     try {
@@ -267,7 +267,7 @@ public class TimerFragment extends Fragment {
             if (totalSeconds <= 0) return;
             isRunning = true;
             isPaused = false;
-            btnStart.setIconResource(R.drawable.ic_pause);
+            btnStart.setImageResource(R.drawable.ic_pause);
             btnStop.setEnabled(true);
 
             countDownTimer = new CountDownTimer(totalSeconds * 1000, 100) {
@@ -281,7 +281,7 @@ public class TimerFragment extends Fragment {
                     totalSeconds = 0;
                     isRunning = false;
                     isPaused = false;
-                    btnStart.setIconResource(R.drawable.ic_play_triangle);
+                    btnStart.setImageResource(R.drawable.ic_play_triangle);
                     btnStop.setEnabled(false);
                     updateDisplay();
                     try {
@@ -299,7 +299,7 @@ public class TimerFragment extends Fragment {
         if (countDownTimer != null) countDownTimer.cancel();
         isPaused = true;
         isRunning = true;
-        btnStart.setIconResource(R.drawable.ic_play_triangle);
+        btnStart.setImageResource(R.drawable.ic_play_triangle);
         btnStop.setEnabled(true);
     }
 
@@ -311,7 +311,7 @@ public class TimerFragment extends Fragment {
         npHours.setValue(0);
         npMinutes.setValue(0);
         npSeconds.setValue(0);
-        btnStart.setIconResource(R.drawable.ic_play_triangle);
+        btnStart.setImageResource(R.drawable.ic_play_triangle);
         btnStop.setEnabled(false);
         updateDisplay();
     }

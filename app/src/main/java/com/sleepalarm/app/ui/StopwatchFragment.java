@@ -6,13 +6,13 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.material.button.MaterialButton;
 import com.sleepalarm.app.R;
 import com.sleepalarm.app.utils.PressFeedbackHelper;
 
@@ -23,7 +23,7 @@ import java.util.Locale;
 public class StopwatchFragment extends Fragment {
 
     private TextView tvTime, tvLaps;
-    private MaterialButton btnStart, btnLap, btnReset;
+    private ImageButton btnStart, btnLap, btnReset;
 
     private Handler handler = new Handler(Looper.getMainLooper());
     private long startTime = 0;
@@ -66,14 +66,14 @@ public class StopwatchFragment extends Fragment {
                 running = true;
                 startTime = System.currentTimeMillis() - elapsedTime;
                 handler.post(updateRunnable);
-                btnStart.setIconResource(R.drawable.ic_pause);
+                btnStart.setImageResource(R.drawable.ic_pause);
                 btnLap.setEnabled(true);
                 btnReset.setEnabled(false);
             } else {
                 running = false;
                 handler.removeCallbacks(updateRunnable);
                 elapsedTime = System.currentTimeMillis() - startTime;
-                btnStart.setIconResource(R.drawable.ic_play_triangle);
+                btnStart.setImageResource(R.drawable.ic_play_triangle);
                 btnLap.setEnabled(false);
                 btnReset.setEnabled(true);
             }
@@ -91,7 +91,7 @@ public class StopwatchFragment extends Fragment {
             elapsedTime = 0;
             startTime = 0;
             laps.clear();
-            btnStart.setIconResource(R.drawable.ic_play_triangle);
+            btnStart.setImageResource(R.drawable.ic_play_triangle);
             btnLap.setEnabled(false);
             btnReset.setEnabled(false);
             updateDisplay();
