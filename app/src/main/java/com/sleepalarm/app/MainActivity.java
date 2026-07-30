@@ -184,6 +184,53 @@ public class MainActivity extends AppCompatActivity {
         row.addView(sw);
         root.addView(row);
 
+        // 每日播报开关行
+        LinearLayout briefingRow = new LinearLayout(this);
+        briefingRow.setOrientation(LinearLayout.HORIZONTAL);
+        briefingRow.setGravity(Gravity.CENTER_VERTICAL);
+        briefingRow.setPadding(dpToPx(12), dpToPx(10), dpToPx(12), dpToPx(10));
+        GradientDrawable briefingBg = new GradientDrawable();
+        briefingBg.setCornerRadius(dpToPx(12));
+        briefingBg.setColor(ThemeColors.getSurfaceLight(this));
+        briefingRow.setBackground(briefingBg);
+        LinearLayout.LayoutParams briefingLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        briefingLp.setMargins(0, dpToPx(12), 0, 0);
+        briefingRow.setLayoutParams(briefingLp);
+
+        LinearLayout briefingTextCol = new LinearLayout(this);
+        briefingTextCol.setOrientation(LinearLayout.VERTICAL);
+        TextView tvBriefingLabel = new TextView(this);
+        tvBriefingLabel.setText("每日播报");
+        tvBriefingLabel.setTextSize(16);
+        tvBriefingLabel.setTextColor(ThemeColors.getTextPrimary(this));
+        TextView tvBriefingDesc = new TextView(this);
+        tvBriefingDesc.setText("每天就寝前播放睡眠简报");
+        tvBriefingDesc.setTextSize(13);
+        tvBriefingDesc.setTextColor(ThemeColors.getTextSecondary(this));
+        briefingTextCol.addView(tvBriefingLabel);
+        briefingTextCol.addView(tvBriefingDesc);
+
+        MaterialSwitch swBriefing = new MaterialSwitch(this);
+        swBriefing.setChecked(prefsHelper.isBriefingEnabled());
+        swBriefing.setOnCheckedChangeListener((btn, checked) -> prefsHelper.setBriefingEnabled(checked));
+
+        briefingRow.addView(briefingTextCol, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        briefingRow.addView(swBriefing);
+        root.addView(briefingRow);
+
+        // 查看每日播报入口
+        TextView tvViewBriefing = new TextView(this);
+        tvViewBriefing.setText("查看每日播报 >");
+        tvViewBriefing.setTextSize(16);
+        tvViewBriefing.setTextColor(ThemeColors.getAccent(this));
+        tvViewBriefing.setPadding(dpToPx(12), dpToPx(14), dpToPx(12), dpToPx(14));
+        tvViewBriefing.setOnClickListener(v -> {
+            dialog.dismiss();
+            startActivity(new Intent(this, com.sleepalarm.app.ui.DailyBriefingActivity.class));
+        });
+        root.addView(tvViewBriefing);
+
         builder.setView(root);
         builder.setPositiveButton("关闭", (d, w) -> d.dismiss());
 

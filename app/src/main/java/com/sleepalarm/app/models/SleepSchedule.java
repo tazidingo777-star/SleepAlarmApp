@@ -12,6 +12,10 @@ public class SleepSchedule {
     private boolean enabled;      // 是否启用
     private boolean[] repeatDays; // 重复日, 索引0=周日, 1=周一...6=周六
     private int gradualMinutes;   // 渐响时长（分钟）, 默认10
+    private String ringtoneUri;   // 起床铃声 URI
+    private String ringtoneName;  // 起床铃声显示名称
+    private boolean vibrate;      // 是否振动
+    private String vibrateMode;   // 振动模式
 
     public SleepSchedule() {
         this.id = System.currentTimeMillis();
@@ -22,10 +26,15 @@ public class SleepSchedule {
         this.enabled = true;
         this.repeatDays = new boolean[]{true, true, true, true, true, true, true};
         this.gradualMinutes = 10;
+        this.ringtoneUri = "";
+        this.ringtoneName = "默认铃声";
+        this.vibrate = true;
+        this.vibrateMode = "默认振动";
     }
 
     public SleepSchedule(long id, int bedtimeHour, int bedtimeMinute, int wakeHour, int wakeMinute,
-                         boolean enabled, boolean[] repeatDays, int gradualMinutes) {
+                         boolean enabled, boolean[] repeatDays, int gradualMinutes,
+                         String ringtoneUri, String ringtoneName, boolean vibrate, String vibrateMode) {
         this.id = id;
         this.bedtimeHour = bedtimeHour;
         this.bedtimeMinute = bedtimeMinute;
@@ -34,6 +43,10 @@ public class SleepSchedule {
         this.enabled = enabled;
         this.repeatDays = repeatDays;
         this.gradualMinutes = gradualMinutes;
+        this.ringtoneUri = ringtoneUri;
+        this.ringtoneName = ringtoneName;
+        this.vibrate = vibrate;
+        this.vibrateMode = vibrateMode;
     }
 
     // ===== Getters and Setters =====
@@ -61,6 +74,18 @@ public class SleepSchedule {
 
     public int getGradualMinutes() { return gradualMinutes; }
     public void setGradualMinutes(int gradualMinutes) { this.gradualMinutes = gradualMinutes; }
+
+    public String getRingtoneUri() { return ringtoneUri; }
+    public void setRingtoneUri(String ringtoneUri) { this.ringtoneUri = ringtoneUri; }
+
+    public String getRingtoneName() { return ringtoneName; }
+    public void setRingtoneName(String ringtoneName) { this.ringtoneName = ringtoneName; }
+
+    public boolean isVibrate() { return vibrate; }
+    public void setVibrate(boolean vibrate) { this.vibrate = vibrate; }
+
+    public String getVibrateMode() { return vibrateMode; }
+    public void setVibrateMode(String vibrateMode) { this.vibrateMode = vibrateMode; }
 
     // ===== Utility Methods =====
 

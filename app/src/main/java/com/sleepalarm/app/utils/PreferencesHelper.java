@@ -214,6 +214,10 @@ public class PreferencesHelper {
         o.put("wakeMinute", s.getWakeMinute());
         o.put("enabled", s.isEnabled());
         o.put("gradualMinutes", s.getGradualMinutes());
+        o.put("ringtoneUri", s.getRingtoneUri());
+        o.put("ringtoneName", s.getRingtoneName());
+        o.put("vibrate", s.isVibrate());
+        o.put("vibrateMode", s.getVibrateMode());
         JSONArray days = new JSONArray();
         for (boolean d : s.getRepeatDays()) days.put(d);
         o.put("repeatDays", days);
@@ -226,9 +230,13 @@ public class PreferencesHelper {
         int wh = o.getInt("wakeHour"), wm = o.getInt("wakeMinute");
         boolean en = o.getBoolean("enabled");
         int gm = o.optInt("gradualMinutes", 10);
+        String ringtoneUri = o.optString("ringtoneUri", "");
+        String ringtoneName = o.optString("ringtoneName", "默认铃声");
+        boolean vib = o.optBoolean("vibrate", true);
+        String vibrateMode = o.optString("vibrateMode", "默认振动");
         boolean[] days = new boolean[7];
         JSONArray arr = o.getJSONArray("repeatDays");
         for (int i = 0; i < arr.length() && i < 7; i++) days[i] = arr.getBoolean(i);
-        return new SleepSchedule(id, bh, bm, wh, wm, en, days, gm);
+        return new SleepSchedule(id, bh, bm, wh, wm, en, days, gm, ringtoneUri, ringtoneName, vib, vibrateMode);
     }
 }
